@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/UofT/2W/243 Computer Organization/final project/ECE243_Project",
-      "program": "c:/UofT/2W/243 Computer Organization/final project/ECE243_Project/build/Debug/outDebug",
+      "cwd": "c:/Users/zachm/OneDrive/Documents/School Stuff/Second Year/Winter 2024/ECE243/Final_Project",
+      "program": "c:/Users/zachm/OneDrive/Documents/School Stuff/Second Year/Winter 2024/ECE243/Final_Project/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
