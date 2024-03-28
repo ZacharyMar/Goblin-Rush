@@ -1,6 +1,10 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
+#include <stdbool.h>
+
+/*************** PLAYER RELATED ***********************/
+
 // Enumeration of the player states
 typedef enum PlayerStates {
   IDLE,
@@ -14,26 +18,29 @@ typedef enum PlayerStates {
 // Struct to store player information
 typedef struct Player {
   // Position of player
-  unsigned int x_pos;
-  unsigned int y_pos;
+  int x_pos;
+  int y_pos;
+  // Stores the width and height of player
+  unsigned short int width;
+  unsigned short int height;
   // Score of the player
   unsigned int score;
+  // Cooldown for shooting
+  unsigned int shoot_cooldown;
   // Health of player
-  unsigned char health;
+  char health;
   // Movement speed of player
   unsigned char vel;
   // Boolean to determine direction of travel
-  unsigned char right;
-  unsigned char left;
-  unsigned char down;
-  unsigned char up;
+  bool right;
+  bool left;
+  bool down;
+  bool up;
   // Stores state the player is in
   // State is used to determine animation to play
   PlayerStates state;
-  // Cooldown for shooting
-  unsigned char shoot_cooldown;
-  // Cooldown for ability'
-  unsigned char ability_cooldown;
+  // Boolean used to determine if no cooldown active on evade ability
+  bool canEvade;
   // Used to determine the current frame of the animation
   unsigned char current_frame;
   // Used to determine the number of frames in the current animation being
@@ -46,9 +53,25 @@ typedef struct Cursor {
   // Position of cursor
   unsigned int x_pos;
   unsigned int y_pos;
+  // Dimensions of cursor
+  unsigned short width;
+  unsigned short height;
   // Speed the cursor moves
   unsigned char vel;
 } Cursor;
+
+// Struct to store projectile information
+typedef struct Projectile {
+  // Position of projectile
+  unsigned int x_pos;
+  unsigned int y_pos;
+
+  // Direction of travel
+  int dx;
+  int dy;
+}Projectile;
+
+/************************** ENEMY RELATED ******************************/
 
 typedef struct Goblin{
     // Location of goblin
@@ -113,6 +136,10 @@ typedef struct Wolf{
     // next pointer
     Wolf* next;
 }Wolf;
+
+
+/************** DEVICES ********************/
+
 // Struct to store mouse data
 typedef struct MouseData {
   int dx;
