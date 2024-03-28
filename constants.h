@@ -1,3 +1,9 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
 #define ABILITY_COOLDOWN 30
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
+#define CLOCK_SPEED 100000000
+
+#endif

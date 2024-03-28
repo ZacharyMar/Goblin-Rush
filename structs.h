@@ -113,4 +113,21 @@ typedef struct Wolf{
     // next pointer
     Wolf* next;
 }Wolf;
+// Struct to store mouse data
+typedef struct MouseData {
+  int dx;
+  int dy;
+  unsigned char LMB;
+}MouseData;
+
+// Enumeration of keys pressed
+typedef enum KEYS{
+  W,
+  A,
+  S,
+  D,
+  SPACE,
+  OTHER
+}KEYS;
+
 #endif
