@@ -5,5 +5,6 @@
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define CLOCK_SPEED_DIV 100000
+#define PROJECTILE_WIDTH 2
 
 #endif

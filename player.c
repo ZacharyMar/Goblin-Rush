@@ -1,6 +1,7 @@
 #include "player.h"
 #include "devices.h"
 #include "constants.h"
+#include "projectile.h"
 
 // Updates the player's position, state, and cooldowns
 void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed){
@@ -105,7 +106,6 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed){
     if (mouse.LMB && player->state != EVASION && player->shoot_cooldown == 0){
         player->state = SHOOTING;
         player->shoot_cooldown = SHOOTING_COOLDOWN + 1;
-        // TODO projectile creation
     }
 
     // Update shoot cooldown

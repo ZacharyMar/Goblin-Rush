@@ -54,22 +54,11 @@ typedef struct Cursor {
   unsigned int x_pos;
   unsigned int y_pos;
   // Dimensions of cursor
-  unsigned short width;
-  unsigned short height;
+  unsigned short int width;
+  unsigned short int height;
   // Speed the cursor moves
   unsigned char vel;
 } Cursor;
-
-// Struct to store projectile information
-typedef struct Projectile {
-  // Position of projectile
-  unsigned int x_pos;
-  unsigned int y_pos;
-
-  // Direction of travel
-  int dx;
-  int dy;
-}Projectile;
 
 /************************** ENEMY RELATED ******************************/
 

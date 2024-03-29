@@ -1,8 +1,9 @@
 #include "constants.h"
 #include "structs.h"
 #include "devices.h"
-#include "address_map_nios2.h"
 #include "player.h"
+#include "projectile.h"
+#include <stdlib.h>
 
 int main(){
     // Initial setup
@@ -44,6 +45,16 @@ int main(){
         .vel = 5
     };
 
+    // Create list of projectiles
+    ProjectileList* projectile_list = malloc(sizeof(ProjectileList));
+    // Unable to allocate memory - Error
+    if (projectile_list == NULL){
+        return -1;
+    }
+    // Initalize pointers for list as NULL
+    projectile_list->head = NULL;
+    projectile_list->tail = NULL;
+
     while(1){
         // Get mouse data
         MouseData mouse_data = get_mouse_data();
@@ -57,7 +68,12 @@ int main(){
         // TODO:
         // Update enemies
 
-        // Update projectiles
+        // Create new projectile if player is currently shooting
+        if (player.state == SHOOTING){
+            createProjectile(projectile_list, player, cursor);
+        }
+        // Update position of projectiles
+        updateProjectilePosition(projectile_list);
 
         // Any other updates???
 
@@ -65,4 +81,7 @@ int main(){
 
         // Refresh screen
     }
+
+    // Deallocate memory
+    freeProjectileList(projectile_list);
 }
