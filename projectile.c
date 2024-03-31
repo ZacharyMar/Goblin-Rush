@@ -8,6 +8,11 @@
 // Creates projectile object
 bool createProjectile(ProjectileList* list, const Player player,
                       const Cursor cursor) {
+  // Do no create more projectiles if at max
+  if (list->count >= MAX_NUM_PROJECTILES){
+    return false;
+  }
+  
   // Try to allocate memory
   Projectile* projectile = malloc(sizeof(Projectile));
   // Allocation failed
@@ -43,6 +48,10 @@ bool createProjectile(ProjectileList* list, const Player player,
     list->tail->next = projectile;
     list->tail = projectile;
   }
+
+  // Update count
+  list->count++;
+
   return true;
 }
 
@@ -85,6 +94,9 @@ void updateProjectilePosition(ProjectileList* list) {
         free(cur);
         cur = prev->next;
       }
+
+      // Update count
+      list->count--;
     }
     // traverse list
     else {

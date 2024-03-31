@@ -54,6 +54,7 @@ int main(){
     // Initalize pointers for list as NULL
     projectile_list->head = NULL;
     projectile_list->tail = NULL;
+    projectile_list->count = 0;
 
     while(1){
         // Get mouse data

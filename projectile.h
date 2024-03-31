@@ -27,6 +27,8 @@ typedef struct ProjectileList {
   Projectile* head;
   // Points to tail of the projectile list
   Projectile* tail;
+  // Keeps track of the total number of projectiles on screen
+  int count;
 }ProjectileList;
 
 // Creates projectile object
