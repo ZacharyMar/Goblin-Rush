@@ -3,6 +3,7 @@
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define GOBLIN_MAX_SPEED 5
+#define BOUNDARY 5
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 unsigned short int goblin_D_Attack[][288] = {
     {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, },
@@ -323,8 +324,8 @@ typedef struct Goblin{
       // Boolean to determine direction of travel
     bool right;
     bool left;
-    bool down;
     bool up;
+    bool down;
     // next pointer
     struct Goblin* next;
 }Goblin;
@@ -348,8 +349,10 @@ void add_goblin(Goblin** head, Goblin* new_goblin);
 Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health, 
                       unsigned char speed, unsigned char state, 
                       unsigned char frame, unsigned char frames, bool right, bool left, bool up, bool down);
-                      // returns whether or not a sprite is within the screen
-bool in_bounds(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
+// returns whether or not a sprite is within the screen
+bool in_bounds(int x, int y, unsigned int width, unsigned int height);
+// delay
+void delay(unsigned int count);
 
 // list of goblins
 Goblin* goblinList = NULL;
@@ -364,6 +367,15 @@ int main(void){
     while (1) {   
         draw();
     }
+    // Goblin* gob = goblinList;
+    // unsigned int count = 0;
+    // while(gob != NULL){
+    //     printf("goblin %d:: x:%d, y:%d, health:%c, speed:%d, state:%c, frame:%d, total_frames:%d, right:%s, left:%s, up:%s, down:%s                    ", 
+    //     count, gob->x_pos, gob->y_pos, gob->health, gob->speed, gob->state, gob->current_frame, gob->frames_in_animation, 
+    //     gob->right ? "true" : "false", gob->left ? "true" : "false", gob->up ? "true" : "false", gob->down ? "true" : "false" );
+    //     gob = gob->next;
+    //     count++;
+    // }
 }
 // populates list of goblins
 void populate_goblin_list(){
@@ -409,7 +421,7 @@ void populate_goblin_list(){
                 down = true;
                 right = true;
         }
-        Goblin* g = create_goblin(rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT, 100, rand() % GOBLIN_MAX_SPEED, 0x0, 0, 6, right, left, up, down); // state: 0 for walk 1 for attack
+        Goblin* g = create_goblin(rand() % (SCREEN_WIDTH - 48 - BOUNDARY) + BOUNDARY, rand() % (SCREEN_HEIGHT- 48 - BOUNDARY) + BOUNDARY, 100, rand() % GOBLIN_MAX_SPEED, rand() % 2, 0, 6, right, left, up, down); // state: 0 for walk 1 for attack
         // add new goblin to linked list
         add_goblin(&goblinList, g);
     }       
@@ -439,25 +451,25 @@ void draw(){
         int dx = gob->left || gob->right ? gob->speed : 0;
         int dy = gob->up || gob->down ? gob->speed : 0;
         dx = gob->left ? -dx : dx;
-        dy = gob->right ? dy : -dy;
+        dy = gob->down ? -dy : dy;
         // temp new x and y coordinates
-        unsigned int new_x = gob->x_pos + dx;
-        unsigned int new_y = gob->y_pos + dy;
+        int new_x = gob->x_pos + dx;
+        int new_y = gob->y_pos + dy;
         // update boolean parameters based on whether or not next move is in bounds
         if(!in_bounds(new_x, new_y, 48, 48)){
-            if(new_x == 0){
+            if(new_x <= BOUNDARY){
                 gob->right = true;
                 gob->left = false;
             }
-            if(new_x + 48 == SCREEN_WIDTH - 1){
+            if(new_x + 48 + BOUNDARY >= SCREEN_WIDTH){
                 gob->right = false;
                 gob->left = true;
             }
-            if(new_y == 0){
+            if(new_y <= BOUNDARY){
                 gob->up = true;
                 gob->down = false;
             }
-            if(new_y + 48 == SCREEN_HEIGHT - 1){
+            if(new_y + 48 + BOUNDARY >= SCREEN_WIDTH){
                 gob->up = false;
                 gob->down = true;
             }
@@ -468,46 +480,55 @@ void draw(){
             dy = gob->right ? dy : -dy;
         }
         
-        // update x and y pos
+        // update x and y pos along with sprite sheet index
         gob->x_pos += dx;
         gob->y_pos += dy;
+        gob->current_frame = (gob->current_frame + 1) % gob->frames_in_animation;
         // select sprite sheet for drawing
         unsigned short int** sprite_sheet;
         // reverse for right movement
         bool reverse = false;
         // goblin moving up
+        
         if(gob->up && !gob->down){
-            sprite_sheet = gob->state == 0x0 ? goblin_U_Walk : goblin_U_Attack;
+            sprite_sheet = gob->state == 0 ? goblin_U_Walk : goblin_U_Attack;
         
         // goblin moving down
         } else if(gob->down && !gob->left && !gob->right && !gob->up){
-            sprite_sheet = gob->state == 0x0 ? goblin_D_Walk : goblin_D_Attack;
+            sprite_sheet = gob->state == 0 ? goblin_D_Walk : goblin_D_Attack;
 
         // goblin moving right
         }else if(!gob->left && gob->right && !gob->up){
             reverse = true;
-            sprite_sheet = gob->state == 0x0 ? goblin_S_Walk : goblin_S_Attack;
+            sprite_sheet = gob->state == 0 ? goblin_S_Walk : goblin_S_Attack;
         
         // goblin moving left
         }else if(gob->left && !gob->right && !gob->up){
-            sprite_sheet = gob->state == 0x0 ? goblin_S_Walk : goblin_S_Attack;
+            sprite_sheet = gob->state == 0 ? goblin_S_Walk : goblin_S_Attack;
         }
         draw_enemy_sprite_frame(sprite_sheet, gob->x_pos, gob->y_pos, gob->current_frame, gob->frames_in_animation, reverse);
+        gob = gob->next;
     }
     wait_for_vsync(); // swap front and back buffers on VGA vertical sync
-    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
 }
 // returns whether or not a sprite is within the screen
-bool in_bounds(unsigned int x, unsigned int y, unsigned int width, unsigned int height){
-    return x > 0 && x + width - 1 < SCREEN_WIDTH && y > 0 && y + height < SCREEN_HEIGHT;
+bool in_bounds(int x, int y, unsigned int width, unsigned int height){
+    return x > BOUNDARY && x + width + BOUNDARY < SCREEN_WIDTH && y > BOUNDARY && y + height + BOUNDARY < SCREEN_HEIGHT;
+}
+// delay
+void delay(unsigned int count){
+    for(unsigned int i = 0; i < count; i++){
+        for(unsigned int j = 0; j < count; j++){
+            int k = i + j;
+        }
+    }
 }
 // draws an enemy sprite starting from its top left corner (x_offset, y_offset)
 void draw_enemy_sprite_frame(unsigned short int sprite_ptr[][288], unsigned int x_offset, unsigned int y_offset, unsigned int frame_idx, unsigned int num_frames, bool reverse){
     // iterate through the height of a frame
-    unsigned int sheet_height = ARRAYSIZE(sprite_ptr);
+    unsigned int sheet_height = 48;
     unsigned int sheet_width = ARRAYSIZE(sprite_ptr[0]);
     unsigned int frame_width = sheet_width / num_frames;
-
     for(unsigned int i = 0; i < sheet_height; i++){
         // iterate through the width of a frame
         for(unsigned int j = 0; j < frame_width; j++){
@@ -515,12 +536,9 @@ void draw_enemy_sprite_frame(unsigned short int sprite_ptr[][288], unsigned int 
             unsigned int sprite_index = reverse ? (frame_width - 1 - j) : j;
             sprite_index += (frame_width * frame_idx);
 
-            // Calculate the x position to draw on the screen based on direction
-            unsigned int x_draw = reverse ? x_offset + (frame_width - 1 - j) : x_offset + j;
-
             // remove background and draw pixel if it's not white (0xFFFF)
             if(sprite_ptr[i][sprite_index] != 0xFFFF){
-                plot_pixel(x_draw, y_offset + i, sprite_ptr[i][sprite_index]);
+                plot_pixel(x_offset + j, y_offset + i, sprite_ptr[i][sprite_index]);
             }
         }
     }
@@ -536,6 +554,7 @@ void wait_for_vsync() {
     while((status & 1) != 0x0){
         status = *(pixel_ctrl_ptr + 3);
     }
+    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
 }
 void clear_screen() {
   volatile int *pixel_ctrl_ptr = (int *)0xff203020;
