@@ -6,20 +6,20 @@
 // Struct to store projectile information
 typedef struct Projectile {
   // Position of projectile
-  unsigned int x_pos;
-  unsigned int y_pos;
+  float x_pos;
+  float y_pos;
 
   // Dimensions
   unsigned short int width;
   unsigned short int height;
 
   // Direction of travel
-  int dx;
-  int dy;
+  float dx;
+  float dy;
 
   // Used to traverse to next projectile in list
-  Projectile* next;
-}Projectile;
+  struct Projectile* next;
+} Projectile;
 
 // Linked list of projectiles
 typedef struct ProjectileList {

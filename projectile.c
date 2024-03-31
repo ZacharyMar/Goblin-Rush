@@ -9,10 +9,10 @@
 bool createProjectile(ProjectileList* list, const Player player,
                       const Cursor cursor) {
   // Do no create more projectiles if at max
-  if (list->count >= MAX_NUM_PROJECTILES){
+  if (list->count >= MAX_NUM_PROJECTILES) {
     return false;
   }
-  
+
   // Try to allocate memory
   Projectile* projectile = malloc(sizeof(Projectile));
   // Allocation failed
@@ -22,20 +22,22 @@ bool createProjectile(ProjectileList* list, const Player player,
 
   // Direction of travel calculated as unit vector from center of player to
   // center of cursor Get vector
-  int dx = (cursor.x_pos + cursor.width) - (player.x_pos + player.width);
-  int dy = (cursor.y_pos + cursor.height) - (player.y_pos + player.height);
+  float dx = (cursor.x_pos + (cursor.width >> 1)) - (player.x_pos + (player.width >> 1));
+  float dy = (cursor.y_pos + (cursor.height >> 1)) - (player.y_pos + (player.height >> 1));
 
   // Normalize vector
-  double magnitude = sqrt((dx * dx) + (dy * dy));
+  float magnitude = sqrt((dx * dx) + (dy * dy));
   dx /= magnitude;
   dy /= magnitude;
 
   // Load information
   projectile->dx = dx;
   projectile->dy = dy;
-  projectile->x_pos = player.x_pos + player.width;
-  projectile->y_pos = player.y_pos + player.height;
+  projectile->x_pos = player.x_pos + (player.width >> 1);
+  projectile->y_pos = player.y_pos + (player.height >> 1);
   projectile->next = NULL;
+  projectile->height = PROJECTILE_WIDTH;
+  projectile->width = PROJECTILE_WIDTH;
 
   // Insert projectile into list
   // List is currently empty
@@ -69,7 +71,6 @@ void updateProjectilePosition(ProjectileList* list) {
     if (cur->x_pos < 0 || cur->x_pos + cur->width > SCREEN_WIDTH ||
         cur->y_pos < 0 || cur->y_pos + cur->height > SCREEN_HEIGHT) {
       // Delete projectile since off screen
-
       // Need to delete head
       if (prev == NULL) {
         // Set node to delete in temp

@@ -1,3 +1,7 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
+
 /*************
  * Constants
  */
@@ -54,9 +58,25 @@
 #define HPS_TIMER3_BASE 0xFFD01000
 #define FPGA_BRIDGE 0xFFD0501C
 
-/********************
- * Structs
- */
+// Device specs
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+#define CLOCK_SPEED_DIV 100000
+
+// Player related
+#define SHOOTING_COOLDOWN 25
+
+// Projectile related
+#define PROJECTILE_WIDTH 2
+#define MAX_NUM_PROJECTILES 10
+
+// Colours
+#define YELLOW 0xFFE0
+#define RED 0xF800
+#define GREEN 0x07E0
+
+/*************** PLAYER RELATED ***********************/
+
 // Enumeration of the player states
 typedef enum PlayerStates {
   IDLE,
@@ -70,26 +90,29 @@ typedef enum PlayerStates {
 // Struct to store player information
 typedef struct Player {
   // Position of player
-  unsigned int x_pos;
-  unsigned int y_pos;
+  int x_pos;
+  int y_pos;
+  // Stores the width and height of player
+  unsigned short int width;
+  unsigned short int height;
   // Score of the player
   unsigned int score;
+  // Cooldown for shooting
+  unsigned int shoot_cooldown;
   // Health of player
-  unsigned char health;
+  char health;
   // Movement speed of player
   unsigned char vel;
   // Boolean to determine direction of travel
-  unsigned char right;
-  unsigned char left;
-  unsigned char down;
-  unsigned char up;
+  bool right;
+  bool left;
+  bool down;
+  bool up;
   // Stores state the player is in
   // State is used to determine animation to play
   PlayerStates state;
-  // Cooldown for shooting
-  unsigned char shoot_cooldown;
-  // Cooldown for ability'
-  unsigned char ability_cooldown;
+  // Boolean used to determine if no cooldown active on evade ability
+  bool canEvade;
   // Used to determine the current frame of the animation
   unsigned char current_frame;
   // Used to determine the number of frames in the current animation being
@@ -100,11 +123,44 @@ typedef struct Player {
 // Struct to store cursor information
 typedef struct Cursor {
   // Position of cursor
-  unsigned int x_pos;
-  unsigned int y_pos;
+  int x_pos;
+  int y_pos;
+  // Dimensions of cursor
+  unsigned short int width;
+  unsigned short int height;
   // Speed the cursor moves
   unsigned char vel;
 } Cursor;
+
+// Struct to store projectile information
+typedef struct Projectile {
+  // Position of projectile
+  float x_pos;
+  float y_pos;
+
+  // Dimensions
+  unsigned short int width;
+  unsigned short int height;
+
+  // Direction of travel
+  float dx;
+  float dy;
+
+  // Used to traverse to next projectile in list
+  struct Projectile* next;
+} Projectile;
+
+// Linked list of projectiles
+typedef struct ProjectileList {
+  // Points to the head of the projectile list
+  Projectile* head;
+  // Points to tail of the projectile list
+  Projectile* tail;
+  // Keeps track of the total number of projectiles on screen
+  int count;
+} ProjectileList;
+
+/************** DEVICES ********************/
 
 // Struct to store mouse data
 typedef struct MouseData {
@@ -120,71 +176,144 @@ typedef enum KEYS { W, A, S, D, SPACE, OTHER } KEYS;
  * Prototypes
  */
 
+/****** MOUSE **************/
 // Function used to initialize the mouse device
 void init_mouse();
+// Function used to get mouse data
+MouseData get_mouse_data();
+/******** KEYBOARD *******************/
 // Function used to initalize the keyboard device
 void init_keyboard();
-// Functions used to get mouse data
-MouseData get_mouse_data();
 // Function to get keyboard data
 KEYS get_keyboard_data();
-// Function used to stop timer
+/******** TIMER ***************/
+// Function used to stop both timers
 void stop_timer();
 // Function used to delay program for specified time in milliseconds
 void delay(unsigned int time_delay);
+// Sets the timer for specified time (ms) and starts it
+void set_timer(unsigned int time);
+// Polls timer if it is done counting down
+bool timer_done();
+// Function used to delay program for specified time in milliseconds
+void delay(unsigned int time_delay);
+// Creates projectile object
+bool createProjectile(ProjectileList* list, const Player player,
+                      const Cursor cursor);
+// Updates projectile position
+void updateProjectilePosition(ProjectileList* list);
+// Used to free memory use for projectile list
+void freeProjectileList(ProjectileList* list);
+// sets up back buffer for double buffering
+void init_double_buffer(short int* buffer1, short int* buffer2);
+// plots a single pixel onto the back frame buffer
+void plot_pixel(int x, int y, short int colour);
+// Used to busy wait for screen buffer to swap for I/O
+void wait_for_vsync();
+// Clears the screen to background image
+void clear_screen();
+// Draws player to the screen
+void draw_player(const Player player);
+// Draws the cursor to the screen
+void draw_cursor(const Cursor cursor);
+// Draws the projectiles to the screen
+void draw_projectiles(const ProjectileList* list);
+// Updates the screen
+void refresh_screen(const Player player, const Cursor Cursor,
+                    const ProjectileList* list);
+// Updates the player's position, state, and cooldowns
+void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed);
+// Updates the player's cursor
+void updateCursor(Cursor* cursor, MouseData mouse);
 
 /******************
  * Main
  */
+// buffer used to copy background quickly
+short int BackgroundBuffer[240][512] = {0};
+
+// Memory used for front and back buffers
+short int Buffer1[240][512];
+short int Buffer2[240][512];
+
 int main() {
+  // Initial setup
+
   // Initialize devices
   init_mouse();
   init_keyboard();
   stop_timer();
+  init_double_buffer(&Buffer1, &Buffer2);
 
-  // Clear garbage from FIFOs
-  get_keyboard_data();
+  // Clear garbage from PS2 FIFOs
   get_mouse_data();
+  get_keyboard_data();
 
   // Create instances of player and cursor
-  Player player = {.x_pos = 0,
-                   .y_pos = 0,
+  Player player = {.x_pos = 100,
+                   .y_pos = 60,
+                   .height = 10,
+                   .width = 10,
                    .score = 0,
+                   .shoot_cooldown = 0,
                    .health = 100,
                    .vel = 5,
-                   .right = 0,
-                   .left = 0,
-                   .down = 0,
-                   .up = 0,
+                   .right = false,
+                   .left = false,
+                   .down = false,
+                   .up = false,
                    .state = IDLE,
-                   .shoot_cooldown = 0,
-                   .ability_cooldown = 0,
+                   .canEvade = true,
                    .current_frame = 0,
                    .frames_in_animation = 10};
 
-  Cursor cursor = {.x_pos = 0, .y_pos = 0, .vel = 5};
+  Cursor cursor = {
+      .x_pos = 100, .y_pos = 60, .width = 10, .height = 10, .vel = 5};
+
+  // Create list of projectiles
+  ProjectileList* projectile_list = malloc(sizeof(ProjectileList));
+  // Unable to allocate memory - Error
+  if (projectile_list == NULL) {
+    return -1;
+  }
+  // Initalize pointers for list as NULL
+  projectile_list->head = NULL;
+  projectile_list->tail = NULL;
+  projectile_list->count = 0;
 
   while (1) {
     // Get mouse data
     MouseData mouse_data = get_mouse_data();
-    if (mouse_data.dx != 0) {
-      printf("X: %d\n", mouse_data.dx);
-    }
-    if (mouse_data.dy != 0) {
-      printf("Y: %d\n", mouse_data.dy);
-    }
-    if (mouse_data.LMB) {
-      printf("LMB pressed\n");
-    }
-    // Get keyboard data
+    // Get key pressed
     KEYS key_pressed = get_keyboard_data();
-    if (key_pressed == A) printf("A key pressed\n");
-    if (key_pressed == S) printf("S key pressed\n");
-    if (key_pressed == W) printf("W key pressed\n");
-    if (key_pressed == D) printf("D key pressed\n");
-    if (key_pressed == SPACE) printf("SPACE pressed\n");
+
+    // Update player and cursor based on inputs
+    updatePlayer(&player, mouse_data, key_pressed);
+    updateCursor(&cursor, mouse_data);
+
+    // TODO:
+    // Update enemies
+
+    // Create new projectile if player is currently shooting
+    if (player.state == SHOOTING) {
+      createProjectile(projectile_list, player, cursor);
+    }
+    // Update position of projectiles
+    updateProjectilePosition(projectile_list);
+
+    // Any other updates???
+
+    // Collision detection
+
+    // Refresh screen
+    refresh_screen(player, cursor, projectile_list);
   }
+
+  // Deallocate memory
+  freeProjectileList(projectile_list);
 }
+
+/************** MOUSE + KEYBOARD **********************/
 
 // Initalizes the mouse device
 void init_mouse() {
@@ -205,6 +334,7 @@ void init_keyboard() {
 
   // Write reset
   *(PS2_KEYBOARD) = 0xFF;
+  // Write enable
   *(PS2_KEYBOARD) = 0xF4;
   return;
 }
@@ -346,10 +476,9 @@ KEYS get_keyboard_data() {
         default:
           return OTHER;
       }
+    } else {
+      count++;
     }
-    else{
-        count++;
-    } 
     // Device was just inserted - allow data to be sent
     if ((byte1 == (char)0xAA) && (byte2 == (char)0x00)) {
       *(PS2_KEYBOARD) = 0xF4;
@@ -357,16 +486,20 @@ KEYS get_keyboard_data() {
   }
 }
 
-// Function used to stop timer
+/***************** TIMER *******************/
+
+// Function used to stop timers
 void stop_timer() {
   volatile int* timer_addr = (int*)TIMER_BASE;
+  *(timer_addr + 1) = 0x8;
+  timer_addr = (int*)TIMER_2_BASE;
   *(timer_addr + 1) = 0x8;
 }
 
 // Function used to delay program for specified time in milliseconds
 void delay(unsigned int time_delay) {
   // counter = Clock speed * time delay
-  unsigned int counter_value = time_delay * 100000;
+  unsigned int counter_value = time_delay * CLOCK_SPEED_DIV;
 
   // Setup timer
   volatile int* timer_addr = (int*)TIMER_BASE;
@@ -385,4 +518,380 @@ void delay(unsigned int time_delay) {
 
   // Reset flag
   *timer_addr = 0x0;
+}
+
+// Separate timer used for setting counts
+void set_timer(unsigned int time) {
+  // Counter = clock speed * time
+  unsigned int count = time * CLOCK_SPEED_DIV;
+
+  // Setip timer
+  volatile int* addr = (int*)TIMER_2_BASE;
+  *(addr + 1) = 0x8;
+  *(addr + 2) = count & 0xFFFF;
+  *(addr + 3) = (count >> 16) & 0xFFFF;
+
+  // Start timer
+  *(addr + 1) = 0x4;
+}
+
+// Polls second timer to see if it is done
+bool timer_done() {
+  // Check TO flag
+  volatile int* addr = (int*)TIMER_2_BASE;
+  // TO flag raised --> timer done
+  if (*addr & 0x1) {
+    // reset flag
+    *addr = 0x0;
+    return true;
+  }
+  // TO flag not raised
+  return false;
+}
+
+// Clears the screen to the background buffer
+void clear_screen() {
+  volatile int* pixel_ctrl_ptr = (int*)PIXEL_BUF_CTRL_BASE;
+  int* back_buffer = *(pixel_ctrl_ptr + 1);
+  memcpy(back_buffer, BackgroundBuffer, sizeof(BackgroundBuffer));
+}
+
+// Plots a pixel at the specified location in the back buffer
+void plot_pixel(int x, int y, short int colour) {
+  // Get back buffer from device
+  volatile int* pixel_ctrl_ptr = (int*)PIXEL_BUF_CTRL_BASE;
+  // Get pixel location in memory
+  short int* pixel = *(pixel_ctrl_ptr + 1) + (y << 10) + (x << 1);
+  // Draw pixel in memory
+  *pixel = colour;
+}
+
+// Busy wait loop to check if buffer ready to write to
+void wait_for_vsync() {
+  volatile int* pixel_ctrl_ptr = (int*)PIXEL_BUF_CTRL_BASE;
+  int status;
+  // Start synchronization by writing one to buffer
+  *pixel_ctrl_ptr = 1;
+  // get status reg
+  status = *(pixel_ctrl_ptr + 3);
+  // Continue polling until buffer ready to write to
+  while ((status & 0x1) != 0) {
+    // update
+    status = *(pixel_ctrl_ptr + 3);
+  }
+}
+
+// sets up back buffer for double buffering
+void init_double_buffer(short int* buffer1, short int* buffer2) {
+  volatile int* pixel_ctrl_ptr = (int*)PIXEL_BUF_CTRL_BASE;
+
+  // Set front buffer
+  *(pixel_ctrl_ptr + 1) = (int)buffer1;
+  clear_screen();
+  wait_for_vsync();
+
+  // Set back buffer
+  *(pixel_ctrl_ptr + 1) = (int)buffer2;
+  clear_screen();
+}
+
+// Draws the player to the screen
+void draw_player(const Player player) {
+  // TODO draw sprite/animation of player
+
+  // Testing draw player as square
+  for (int y = player.y_pos; y < player.y_pos + player.height; y++) {
+    for (int x = player.x_pos; x < player.x_pos + player.width; x++) {
+      plot_pixel(x, y, GREEN);
+    }
+  }
+}
+
+// Draws the cursor to the screen
+void draw_cursor(const Cursor cursor) {
+  // TODO draw sprite for cursor
+
+  // Testing draw as single pixel
+  plot_pixel(cursor.x_pos + (cursor.width >> 1), cursor.y_pos + (cursor.height >> 1), RED);
+}
+
+// Draws the projectiles to the screen
+void draw_projectiles(const ProjectileList* list) {
+  // Draw all projectiles in the linked list
+  Projectile* cur = list->head;
+  while (cur != NULL) {
+    // Draw each projectile as yellow square
+    for (int y = (int)cur->y_pos; y < (int)(cur->y_pos + cur->height); y++) {
+      for (int x = (int)cur->x_pos; x < (int)(cur->x_pos + cur->width); x++) {
+        plot_pixel(x, y, YELLOW);
+      }
+    }
+
+    // Traverse to next projectile
+    cur = cur->next;
+  }
+}
+
+// Updates the screen
+void refresh_screen(const Player player, const Cursor Cursor,
+                    const ProjectileList* list) {
+  // Clear screen first
+  clear_screen();
+
+  // Draw elements to screen
+  draw_player(player);
+  draw_projectiles(list);
+  draw_cursor(Cursor);
+
+  // Call buffer swap
+  wait_for_vsync();
+}
+
+// Creates projectile object
+bool createProjectile(ProjectileList* list, const Player player,
+                      const Cursor cursor) {
+  // Do no create more projectiles if at max
+  if (list->count >= MAX_NUM_PROJECTILES) {
+    return false;
+  }
+
+  // Try to allocate memory
+  Projectile* projectile = malloc(sizeof(Projectile));
+  // Allocation failed
+  if (projectile == NULL) {
+    return false;
+  }
+
+  // Direction of travel calculated as unit vector from center of player to
+  // center of cursor Get vector
+  float dx = (cursor.x_pos + (cursor.width >> 1)) - (player.x_pos + (player.width >> 1));
+  float dy = (cursor.y_pos + (cursor.height >> 1)) - (player.y_pos + (player.height >> 1));
+
+  // Normalize vector
+  float magnitude = sqrt((dx * dx) + (dy * dy));
+  dx /= magnitude;
+  dy /= magnitude;
+
+  // Load information
+  projectile->dx = dx;
+  projectile->dy = dy;
+  projectile->x_pos = player.x_pos + (player.width >> 1);
+  projectile->y_pos = player.y_pos + (player.height >> 1);
+  projectile->next = NULL;
+  projectile->height = PROJECTILE_WIDTH;
+  projectile->width = PROJECTILE_WIDTH;
+
+  // Insert projectile into list
+  // List is currently empty
+  if (list->head == NULL) {
+    list->head = projectile;
+    list->tail = projectile;
+  }
+  // List is populated
+  else {
+    list->tail->next = projectile;
+    list->tail = projectile;
+  }
+
+  // Update count
+  list->count++;
+
+  return true;
+}
+
+// Updates projectile position
+void updateProjectilePosition(ProjectileList* list) {
+  // Traverse list
+  Projectile* cur = list->head;
+  Projectile* prev = NULL;
+  while (cur != NULL) {
+    // Update information
+    cur->x_pos += cur->dx;
+    cur->y_pos += cur->dy;
+
+    // Check projectile now off screen
+    if (cur->x_pos < 0 || cur->x_pos + cur->width > SCREEN_WIDTH ||
+        cur->y_pos < 0 || cur->y_pos + cur->height > SCREEN_HEIGHT) {
+      // Delete projectile since off screen
+      // Need to delete head
+      if (prev == NULL) {
+        // Set node to delete in temp
+        prev = cur;
+        // Traverse
+        cur = cur->next;
+        // Update new head of list
+        list->head = cur;
+        // Head was tail as well
+        list->tail = prev == list->tail ? cur : list->tail;
+        // Free memory
+        free(prev);
+        prev = NULL;
+      }
+      // Node to delete is not the head
+      else {
+        prev->next = cur->next;
+        // Tail node is being deleted
+        if (prev->next == NULL) {
+          list->tail = prev;
+        }
+        free(cur);
+        cur = prev->next;
+      }
+
+      // Update count
+      list->count--;
+    }
+    // traverse list
+    else {
+      prev = cur;
+      cur = cur->next;
+    }
+  }
+}
+
+// Used to free memory use for projectile list
+// NOTE: After calling, the list pointer should not be used again!
+void freeProjectileList(ProjectileList* list) {
+  // Iterate through list to free each projectile
+  Projectile* cur = list->head;
+  while (cur != NULL) {
+    Projectile* tmp = cur;
+    cur = cur->next;
+    free(tmp);
+  }
+
+  // Free list pointer itself
+  free(list);
+}
+
+// Updates the player's position, state, and cooldowns
+void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
+  /**** Keyboard input ********/
+  // WASD control movement of player
+  // SPACE controls evasion state of player
+
+  // Update position and state based on key press
+  switch (key_pressed) {
+    // Move player up
+    case W:
+      player->y_pos -= player->vel;
+      player->up = true;
+      player->down = false;
+      player->left = false;
+      player->right = false;
+      player->state = player->state == EVASION ? EVASION : MOVING;
+      break;
+    // Move left
+    case A:
+      player->x_pos -= player->vel;
+      player->left = true;
+      player->right = false;
+      player->up = false;
+      player->down = false;
+      player->state = player->state == EVASION ? EVASION : MOVING;
+      break;
+    // Move right
+    case D:
+      player->x_pos += player->vel;
+      player->right = true;
+      player->left = false;
+      player->down = false;
+      player->up = false;
+      player->state = player->state == EVASION ? EVASION : MOVING;
+      break;
+    // Move down
+    case S:
+      player->y_pos += player->vel;
+      player->down = true;
+      player->up = false;
+      player->left = false;
+      player->right = false;
+      player->state = player->state == EVASION ? EVASION : MOVING;
+      break;
+    // Evasion
+    case SPACE:
+      // Enter evasion if cooldown is set to zero and in a valid state
+      // Player enters evasion state for 2 seconds
+      if (player->canEvade && player->health > 0) {
+        player->state = EVASION;
+        player->canEvade = false;
+        // Increase movement speed
+        player->vel = player->vel << 2;
+        // Set timer for 2 seconds
+        set_timer(2000);
+      }
+      break;
+
+    // No meaningful input
+    default:
+      player->state = player->state == EVASION ? EVASION : IDLE;
+      break;
+  }
+
+  // Check out of bounds for player
+  // Left boundary
+  if (player->x_pos < 0) {
+    player->x_pos = 0;
+  }
+  // Right boundary
+  else if (player->x_pos + player->width > SCREEN_WIDTH) {
+    player->x_pos = SCREEN_WIDTH - player->width;
+  }
+  // Top boundary
+  if (player->y_pos < 0) {
+    player->y_pos = 0;
+  }
+  // Bottom boundary
+  else if (player->y_pos + player->height > SCREEN_HEIGHT) {
+    player->y_pos = SCREEN_HEIGHT - player->height;
+  }
+
+  // Check for ability cool down
+  bool timerDone = timer_done();
+  // Evasion wore off
+  if (timerDone && player->state == EVASION) {
+    // Player is no longer in evasion state
+    player->state = MOVING;
+    // Set speed back to normal
+    player->vel = player->vel >> 2;
+    // Set timer for cooldown for 30s
+    set_timer(30000);
+  }
+  // Cooldown is finished for evasion
+  else if (timerDone) {
+    player->canEvade = true;
+  }
+
+  /*********** MOUSE ****************/
+  // LMB used to shoot
+
+  // LMB clicked -> player enters shooting state
+  // Can only shoot when not evading and shooting cooldown is finished
+  if (mouse.LMB && player->state != EVASION && player->shoot_cooldown == 0) {
+    player->state = SHOOTING;
+    player->shoot_cooldown = SHOOTING_COOLDOWN + 1;
+  }
+  // Update shoot cooldown
+  if (player->shoot_cooldown > 0) {
+    player->shoot_cooldown--;
+  }
+
+  // TODO - update player's score
+}
+
+// Updates the player's cursor
+void updateCursor(Cursor* cursor, MouseData mouse) {
+  // Update the cursor's position based upon mouse movement
+  cursor->x_pos += mouse.dx;
+  cursor->y_pos += mouse.dy;
+
+  // Check for out of bounds
+  if (cursor->x_pos < 0)
+    cursor->x_pos = 0;
+  else if (cursor->x_pos + cursor->width > SCREEN_WIDTH)
+    cursor->x_pos = SCREEN_HEIGHT - cursor->width;
+  if (cursor->y_pos < 0)
+    cursor->y_pos = 0;
+  else if (cursor->y_pos + cursor->height > SCREEN_HEIGHT)
+    cursor->y_pos = SCREEN_HEIGHT - cursor->height;
 }
