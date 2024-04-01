@@ -75,6 +75,24 @@
 #define RED 0xF800
 #define GREEN 0x07E0
 
+// Hex display
+#define HEX0 0x3F
+#define HEX1 0x06
+#define HEX2 0x5B
+#define HEX3 0x4F
+#define HEX4 0x66
+#define HEX5 0x6D
+#define HEX6 0x7D
+#define HEX7 0x07
+#define HEX8 0x7F
+#define HEX9 0x67
+#define HEXA 0x77
+#define HEXB 0x7C
+#define HEXC 0x39
+#define HEXD 0x5E
+#define HEXE 0x79
+#define HEXF 0x71
+
 /*************** PLAYER RELATED ***********************/
 
 // Enumeration of the player states
@@ -191,12 +209,18 @@ KEYS get_keyboard_data();
 void stop_timer();
 // Function used to delay program for specified time in milliseconds
 void delay(unsigned int time_delay);
-// Sets the timer for specified time (ms) and starts it
-void set_timer(unsigned int time);
-// Polls timer if it is done counting down
-bool timer_done();
+// Sets the specified timer for specified time (ms) and starts it
+void set_timer(unsigned int time, int timer_addr, bool cont);
+// Polls specified timer if it is done counting down
+bool timer_done(int timer_addr);
 // Function used to delay program for specified time in milliseconds
 void delay(unsigned int time_delay);
+/*********** HEX display ***************/
+// Sets hex display to zeros
+void init_hex();
+// Displays number to hex as BCD
+void set_hex(int v);
+
 // Creates projectile object
 bool createProjectile(ProjectileList* list, const Player player,
                       const Cursor cursor);
@@ -243,6 +267,7 @@ int main() {
   init_mouse();
   init_keyboard();
   stop_timer();
+  init_hex();
   init_double_buffer(&Buffer1, &Buffer2);
 
   // Clear garbage from PS2 FIFOs
@@ -281,6 +306,9 @@ int main() {
   projectile_list->tail = NULL;
   projectile_list->count = 0;
 
+  // Setup score timer - player gains one score every 1 second
+  set_timer(1000, TIMER_BASE, true);
+
   while (1) {
     // Get mouse data
     MouseData mouse_data = get_mouse_data();
@@ -307,11 +335,14 @@ int main() {
 
     // Refresh screen
     refresh_screen(player, cursor, projectile_list);
+    // Update score display
+    set_hex(player.score);
   }
 
   // Deallocate memory
   freeProjectileList(projectile_list);
 }
+
 
 /************** MOUSE + KEYBOARD **********************/
 
@@ -521,26 +552,29 @@ void delay(unsigned int time_delay) {
 }
 
 // Separate timer used for setting counts
-void set_timer(unsigned int time) {
+void set_timer(unsigned int time, int timer_addr, bool cont) {
   // Counter = clock speed * time
   unsigned int count = time * CLOCK_SPEED_DIV;
 
   // Setip timer
-  volatile int* addr = (int*)TIMER_2_BASE;
+  volatile int* addr = (int*)timer_addr;
   *(addr + 1) = 0x8;
   *(addr + 2) = count & 0xFFFF;
   *(addr + 3) = (count >> 16) & 0xFFFF;
 
   // Start timer
-  *(addr + 1) = 0x4;
+  if (cont)
+    *(addr + 1) = 0x6;
+  else
+    *(addr + 1) = 0x4;
 }
 
 // Polls second timer to see if it is done
-bool timer_done() {
+bool timer_done(timer_addr){
   // Check TO flag
-  volatile int* addr = (int*)TIMER_2_BASE;
+  volatile int* addr = (int*)timer_addr;
   // TO flag raised --> timer done
-  if (*addr & 0x1) {
+  if (*addr & 0x1){
     // reset flag
     *addr = 0x0;
     return true;
@@ -548,6 +582,58 @@ bool timer_done() {
   // TO flag not raised
   return false;
 }
+
+/*********** HEX DISPLAY ***********/
+// Sets the hex display to all zeros
+void init_hex() {
+  volatile int* hex0_3 = (int*)HEX3_HEX0_BASE;
+  volatile int* hex4_5 = (int*)HEX5_HEX4_BASE;
+
+  // Set to zero
+  *hex0_3 = 0x0;
+  *hex4_5 = 0x0;
+}
+
+// // Displays number to hex as BCD
+void set_hex(int v) {
+  volatile int* hex0_3 = (int*)HEX3_HEX0_BASE;
+  volatile int* hex4_5 = (int*)HEX5_HEX4_BASE;
+
+  /** Address mapping
+   * HEX0-3:
+   * bits 0-6 HEX0
+   * bits 8-14 HEX1
+   * bits 16-22 HEX2
+   * bits 24-30 HEX3
+   *
+   * HEX4-5:
+   * bits 0-6 HEX4
+   * bits 8-14 HEX5
+   */
+
+  // Code mapping
+  unsigned char codes[16] = {HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7,
+                             HEX8, HEX9, HEXA, HEXB, HEXC, HEXD, HEXE, HEXF};
+  // Used to write to hex display
+  unsigned char hex_segs[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+  // Display to each hex
+  for (int i = 0; i < 6; i++) {
+    // Get nibble
+    unsigned char nibble = v & 0xF;
+    // Get hex display code for value
+    unsigned char code = codes[nibble];
+    // Store code to display
+    hex_segs[i] = code;
+    // Shift v to get next nibble
+    v = v >> 4;
+  }
+
+  // Write to display
+  *(hex0_3) = *(int*)(hex_segs);
+  *(hex4_5) = *(int*)(hex_segs + 4);
+}
+
 
 // Clears the screen to the background buffer
 void clear_screen() {
@@ -818,7 +904,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
         // Increase movement speed
         player->vel = player->vel << 2;
         // Set timer for 2 seconds
-        set_timer(2000);
+        set_timer(2000, TIMER_2_BASE, false);
       }
       break;
 
@@ -847,7 +933,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
   }
 
   // Check for ability cool down
-  bool timerDone = timer_done();
+  bool timerDone = timer_done(TIMER_2_BASE);
   // Evasion wore off
   if (timerDone && player->state == EVASION) {
     // Player is no longer in evasion state
@@ -855,7 +941,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
     // Set speed back to normal
     player->vel = player->vel >> 2;
     // Set timer for cooldown for 30s
-    set_timer(30000);
+    set_timer(30000, TIMER_2_BASE, false);
   }
   // Cooldown is finished for evasion
   else if (timerDone) {
@@ -876,7 +962,11 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
     player->shoot_cooldown--;
   }
 
-  // TODO - update player's score
+  // Update player's score when base timer done counting down
+  timerDone = timer_done(TIMER_BASE);
+  if (timerDone && player->health > 0){
+    player->score++;
+  }
 }
 
 // Updates the player's cursor
@@ -889,7 +979,7 @@ void updateCursor(Cursor* cursor, MouseData mouse) {
   if (cursor->x_pos < 0)
     cursor->x_pos = 0;
   else if (cursor->x_pos + cursor->width > SCREEN_WIDTH)
-    cursor->x_pos = SCREEN_HEIGHT - cursor->width;
+    cursor->x_pos = SCREEN_WIDTH - cursor->width;
   if (cursor->y_pos < 0)
     cursor->y_pos = 0;
   else if (cursor->y_pos + cursor->height > SCREEN_HEIGHT)
