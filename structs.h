@@ -51,8 +51,8 @@ typedef struct Player {
 // Struct to store cursor information
 typedef struct Cursor {
   // Position of cursor
-  unsigned int x_pos;
-  unsigned int y_pos;
+  int x_pos;
+  int y_pos;
   // Dimensions of cursor
   unsigned short int width;
   unsigned short int height;
@@ -72,36 +72,40 @@ typedef struct Goblin{
     // speed of the goblin
     unsigned char speed;
     // current goblin state
-    unsigned char player_state;
-
+    unsigned char state;
     // Used to determine the current frame of the animation
     unsigned char current_frame;
     // Used to determine the number of frames in the current animation being played
     unsigned char frames_in_animation;
+      // Boolean to determine direction of travel
+    bool right;
+    bool left;
+    bool up;
+    bool down;
     // next pointer
-    Goblin* next;
+    struct Goblin* next;
 }Goblin;
+
 
 typedef struct Bee{
     // Location of Bee
     unsigned int x_pos;
     unsigned int y_pos;
 
-    // health of the Bee
-    unsigned char health;
+    // speed of the bee
+    unsigned char speed;
 
-    // direction of attack
-    unsigned char direction;
-
-    // current Bee state
-    unsigned char state;
-
+    bool right;
+    bool left;
+    bool up;
+    bool down;
+    
     // Used to determine the current frame of the animation
     unsigned char current_frame;
     // Used to determine the number of frames in the current animation being played
     unsigned char frames_in_animation;
     // next pointer
-    Bee* next;
+    struct Bee* next;
 }Bee;
 
 typedef struct Wolf{

@@ -1,5 +1,3 @@
-#include "draw.h"
-
 #include <stdlib.h>
 #include <stdbool.h>
 #define SCREEN_WIDTH 320
@@ -701,9 +699,11 @@ unsigned short int bee_U_Walk[][288] = {
     {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, },
 };
 
-#include "address_map_nios2.h"
-#include "constants.h"
 typedef struct Goblin{
+    // Location of goblin
+    unsigned int x_pos;
+    unsigned int y_pos;
+
     // health of the goblin
     unsigned char health;
     // speed of the goblin
@@ -794,9 +794,23 @@ int main(void){
             gob_count++;
             printf("%d goblins!", gob_count);
             }
+        // if(counter % 1000 == 0){
+        //     populate_bee_list();
+        //     bee_count++;
+        //     printf("%d goblins!", bee_count);
+        // }
         counter ++;
         draw();
     }
+    // Goblin* gob = goblinList;
+    // unsigned int count = 0;
+    // while(gob != NULL){
+    //     printf("goblin %d:: x:%d, y:%d, health:%c, speed:%d, state:%c, frame:%d, total_frames:%d, right:%s, left:%s, up:%s, down:%s                    ", 
+    //     count, gob->x_pos, gob->y_pos, gob->health, gob->speed, gob->state, gob->current_frame, gob->frames_in_animation, 
+    //     gob->right ? "true" : "false", gob->left ? "true" : "false", gob->up ? "true" : "false", gob->down ? "true" : "false" );
+    //     gob = gob->next;
+    //     count++;
+    // }
 }
 // populates list of goblins
 void populate_goblin_list(){
@@ -808,7 +822,17 @@ void populate_goblin_list(){
         // add new goblin to linked list
         add_goblin(&goblinList, g);   
 }
-
+// // populates single bee
+// void populate_bee_list(){
+//         bool left = false, right = false, up = false, down = false;
+//         unsigned int x, y;
+//         rand_edge(x, y);
+//         // set direction booleans
+//         rand_direction(&right, &left, &up, &down);
+//         Bee* g = create_bee(x, y, right, left, up, down, 0, 6);
+//         // add new goblin to linked list
+//         add_goblin(&goblinList, g);   
+// }
 // sets up back buffer for double buffering
 void init_double_buffer(volatile int * pcp){
     /* Read location of the pixel buffer from the pixel buffer controller */
@@ -984,7 +1008,7 @@ void wait_for_vsync() {
     pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
 }
 void clear_screen() {
-  volatile int *pixel_ctrl_ptr = (int *)PIXEL_BUF_CTRL_BASE;
+  volatile int *pixel_ctrl_ptr = (int *)0xff203020;
   int *back_buffer = *(pixel_ctrl_ptr + 1);
   memcpy(back_buffer, bg, sizeof(bg));
 }
@@ -996,79 +1020,46 @@ void plot_pixel(int x, int y, short int colour){
     *one_pixel_address = colour;
 }
 
-// Plots a pixel at the specified location in the back buffer
-void plot_pixel(int x, int y, short int colour) {
-  // Get back buffer from device
-  volatile int *pixel_ctrl_ptr = (int *)PIXEL_BUF_CTRL_BASE;
-  // Get pixel location in memory
-  short int *pixel = *(pixel_ctrl_ptr + 1) + (y << 10) + (x << 1);
-  // Draw pixel in memory
-  *pixel = colour;
-}
-
-// Busy wait loop to check if buffer ready to write to
-void wait_for_vsync() {
-  volatile int *pixel_ctrl_ptr = (int *)PIXEL_BUF_CTRL_BASE;
-  int status;
-  // Start synchronization by writing one to buffer
-  *pixel_ctrl_ptr = 1;
-  // get status reg
-  status = *(pixel_ctrl_ptr + 3);
-  // Continue polling until buffer ready to write to
-  while ((status & 0x1) != 0) {
-    // update
-    status = *(pixel_ctrl_ptr + 3);
-  }
-}
-
-// sets up back buffer for double buffering
-void init_double_buffer(short int *buffer1, short int *buffer2) {
-  volatile int *pixel_ctrl_ptr = (int *)PIXEL_BUF_CTRL_BASE;
-
-  // Set front buffer
-  *(pixel_ctrl_ptr + 1) = (int)buffer1;
-  clear_screen();
-  wait_for_vsync();
-
-  // Set back buffer
-  *(pixel_ctrl_ptr + 1) = (int)buffer2;
-  clear_screen();
-}
-
-// Draws the player to the screen
-void draw_player(const Player player) {
-  // TODO draw sprite/animation of player
-
-  // Testing draw player as square
-  for (int y = player.y_pos; y < player.y_pos + player.height; y++) {
-    for (int x = player.x_pos; x < player.x_pos + player.width; x++) {
-      plot_pixel(x, y, GREEN);
+// Function to create a new Goblin
+Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health, 
+                      unsigned char speed, unsigned char state, 
+                      unsigned char frame, unsigned char frames, bool right, bool left, bool up, bool down) {
+    Goblin* new_goblin = (Goblin*)malloc(sizeof(Goblin));
+    if (new_goblin == NULL) {
+        // cant allocate mem
+        return NULL;
     }
-  }
+    
+    // Initialize goblin properties
+    new_goblin->x_pos = x;
+    new_goblin->y_pos = y;
+    new_goblin->health = health;
+    new_goblin->speed = speed;
+    new_goblin->state = state;
+    new_goblin->current_frame = frame;
+    new_goblin->frames_in_animation = frames;
+    new_goblin->right = right;
+    new_goblin->left = left;
+    new_goblin->up = up;
+    new_goblin->down = down;
+    new_goblin->next = NULL;
+
+    return new_goblin;
 }
 
-// Draws the cursor to the screen
-void draw_cursor(const Cursor cursor) {
-  // TODO draw sprite for cursor
-
-  // Testing draw as single pixel
-  plot_pixel(cursor.x_pos + (cursor.width >> 1), cursor.y_pos + (cursor.height >> 1), RED);
-}
-
-// Draws the projectiles to the screen
-void draw_projectiles(const ProjectileList *list) {
-  // Draw all projectiles in the linked list
-  Projectile *cur = list->head;
-  while (cur != NULL) {
-    // Draw each projectile as yellow square
-    for (int y = cur->y_pos; y < cur->y_pos + cur->height; y++) {
-      for (int x = cur->x_pos; x < cur->x_pos + cur->width; x++) {
-        plot_pixel(x, y, YELLOW);
-      }
+// Function to add a Goblin to the list
+void add_goblin(Goblin** head, Goblin* new_goblin) {
+    if (*head == NULL) {
+        // If the list is empty, the new goblin becomes the head
+        *head = new_goblin;
+    } else {
+        // Otherwise, find the end of the list and add the new goblin there
+        Goblin* current = *head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = new_goblin;
     }
-// Traverse to next projectile
-    cur = cur->next;
-  }
 }
 // // Function to create a new Bee and initialize its values
 // Bee* create_bee(unsigned int x, unsigned int y, bool right, bool left, bool up, bool down, unsigned char current_frame, unsigned char frames_in_animation) {
@@ -1133,17 +1124,3 @@ void draw_projectiles(const ProjectileList *list) {
 //         }
 //     }
 // }
-
-// Updates the screen
-void refresh_screen(const Player player, const Cursor Cursor, const ProjectileList* list){
-    // Clear screen first
-    clear_screen();
-
-    // Draw elements to screen
-    draw_player(player);
-    draw_projectiles(list);
-    draw_cursor(Cursor);
-
-    // Call buffer swap
-    wait_for_vsync();
-}

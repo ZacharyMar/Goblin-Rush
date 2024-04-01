@@ -3,7 +3,17 @@
 #include "devices.h"
 #include "player.h"
 #include "projectile.h"
+#include "draw.h"
 #include <stdlib.h>
+
+// Declare globals here
+
+// buffer used to copy background quickly
+short int BackgroundBuffer[240][512] = {0};
+
+// Memory used for front and back buffers
+short int Buffer1[240][512];
+short int Buffer2[240][512];
 
 int main(){
     // Initial setup
@@ -12,6 +22,7 @@ int main(){
     init_mouse();
     init_keyboard();
     stop_timer();
+    init_double_buffer(&Buffer1, &Buffer2);
 
     // Clear garbage from PS2 FIFOs
     get_mouse_data();
@@ -19,10 +30,10 @@ int main(){
 
     // Create instances of player and cursor
     Player player = {
-        .x_pos = 0, 
-        .y_pos = 0,
-        .height = 48,
-        .width = 48,
+        .x_pos = 100, 
+        .y_pos = 60,
+        .height = 10,
+        .width = 10,
         .score = 0, 
         .shoot_cooldown = 0,
         .health = 100, 
@@ -32,14 +43,14 @@ int main(){
         .down = false, 
         .up = false, 
         .state = IDLE, 
-        .canEvade = false, 
+        .canEvade = true, 
         .current_frame = 0, 
         .frames_in_animation = 10
     };
 
     Cursor cursor = {
-        .x_pos = 0,
-        .y_pos = 0,
+        .x_pos = 100,
+        .y_pos = 60,
         .width = 10,
         .height = 10,
         .vel = 5
@@ -54,6 +65,7 @@ int main(){
     // Initalize pointers for list as NULL
     projectile_list->head = NULL;
     projectile_list->tail = NULL;
+    projectile_list->count = 0;
 
     while(1){
         // Get mouse data
@@ -80,6 +92,7 @@ int main(){
         // Collision detection
 
         // Refresh screen
+        refresh_screen(player, cursor, projectile_list);
     }
 
     // Deallocate memory
