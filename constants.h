@@ -13,6 +13,12 @@
 #define PROJECTILE_WIDTH 2
 #define MAX_NUM_PROJECTILES 10
 
+// Bounds
+#define BOUNDARY 5
+
+// Array helper
+#define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
+
 // Colours
 #define YELLOW 0xFFE0
 #define RED 0xF800
