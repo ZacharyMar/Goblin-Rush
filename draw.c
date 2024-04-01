@@ -38,12 +38,12 @@ void wait_for_vsync() {
 }
 
 // sets up back buffer for double buffering
-void init_double_buffer(short int *buffer1, short int *buffer2) {
-  volatile int *pixel_ctrl_ptr = (int *)PIXEL_BUF_CTRL_BASE;
+void init_double_buffer(short int buffer1[240][512], short int buffer2[240][512]) {
+  volatile int* pixel_ctrl_ptr = (int*)PIXEL_BUF_CTRL_BASE;
 
   // Set front buffer
   *(pixel_ctrl_ptr + 1) = (int)buffer1;
-  clear_screen();
+  clear_screen(); 
   wait_for_vsync();
 
   // Set back buffer

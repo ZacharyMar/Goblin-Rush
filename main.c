@@ -25,7 +25,7 @@ int main() {
   init_keyboard();
   stop_timer();
   init_hex();
-  init_double_buffer(&Buffer1, &Buffer2);
+  init_double_buffer(Buffer1, Buffer2);
 
   // Clear garbage from PS2 FIFOs
   get_mouse_data();

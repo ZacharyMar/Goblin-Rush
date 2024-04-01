@@ -1,6 +1,7 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
 
 /*************
  * Constants
@@ -229,7 +230,8 @@ void updateProjectilePosition(ProjectileList* list);
 // Used to free memory use for projectile list
 void freeProjectileList(ProjectileList* list);
 // sets up back buffer for double buffering
-void init_double_buffer(short int* buffer1, short int* buffer2);
+void init_double_buffer(short int buffer1[240][512],
+                        short int buffer2[240][512]);
 // plots a single pixel onto the back frame buffer
 void plot_pixel(int x, int y, short int colour);
 // Used to busy wait for screen buffer to swap for I/O
@@ -268,7 +270,7 @@ int main() {
   init_keyboard();
   stop_timer();
   init_hex();
-  init_double_buffer(&Buffer1, &Buffer2);
+  init_double_buffer(Buffer1, Buffer2);
 
   // Clear garbage from PS2 FIFOs
   get_mouse_data();
@@ -342,7 +344,6 @@ int main() {
   // Deallocate memory
   freeProjectileList(projectile_list);
 }
-
 
 /************** MOUSE + KEYBOARD **********************/
 
@@ -570,11 +571,11 @@ void set_timer(unsigned int time, int timer_addr, bool cont) {
 }
 
 // Polls second timer to see if it is done
-bool timer_done(timer_addr){
+bool timer_done(timer_addr) {
   // Check TO flag
   volatile int* addr = (int*)timer_addr;
   // TO flag raised --> timer done
-  if (*addr & 0x1){
+  if (*addr & 0x1) {
     // reset flag
     *addr = 0x0;
     return true;
@@ -634,7 +635,6 @@ void set_hex(int v) {
   *(hex4_5) = *(int*)(hex_segs + 4);
 }
 
-
 // Clears the screen to the background buffer
 void clear_screen() {
   volatile int* pixel_ctrl_ptr = (int*)PIXEL_BUF_CTRL_BASE;
@@ -668,7 +668,8 @@ void wait_for_vsync() {
 }
 
 // sets up back buffer for double buffering
-void init_double_buffer(short int* buffer1, short int* buffer2) {
+void init_double_buffer(short int buffer1[240][512],
+                        short int buffer2[240][512]) {
   volatile int* pixel_ctrl_ptr = (int*)PIXEL_BUF_CTRL_BASE;
 
   // Set front buffer
@@ -698,7 +699,8 @@ void draw_cursor(const Cursor cursor) {
   // TODO draw sprite for cursor
 
   // Testing draw as single pixel
-  plot_pixel(cursor.x_pos + (cursor.width >> 1), cursor.y_pos + (cursor.height >> 1), RED);
+  plot_pixel(cursor.x_pos + (cursor.width >> 1),
+             cursor.y_pos + (cursor.height >> 1), RED);
 }
 
 // Draws the projectiles to the screen
@@ -750,8 +752,10 @@ bool createProjectile(ProjectileList* list, const Player player,
 
   // Direction of travel calculated as unit vector from center of player to
   // center of cursor Get vector
-  float dx = (cursor.x_pos + (cursor.width >> 1)) - (player.x_pos + (player.width >> 1));
-  float dy = (cursor.y_pos + (cursor.height >> 1)) - (player.y_pos + (player.height >> 1));
+  float dx = (cursor.x_pos + (cursor.width >> 1)) -
+             (player.x_pos + (player.width >> 1));
+  float dy = (cursor.y_pos + (cursor.height >> 1)) -
+             (player.y_pos + (player.height >> 1));
 
   // Normalize vector
   float magnitude = sqrt((dx * dx) + (dy * dy));
@@ -964,7 +968,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
 
   // Update player's score when base timer done counting down
   timerDone = timer_done(TIMER_BASE);
-  if (timerDone && player->health > 0){
+  if (timerDone && player->health > 0) {
     player->score++;
   }
 }
