@@ -2,6 +2,7 @@
 #include "devices.h"
 #include "constants.h"
 #include "projectile.h"
+#include "address_map_nios2.h"
 
 // Updates the player's position, state, and cooldowns
 void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
@@ -57,7 +58,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
         // Increase movement speed
         player->vel = player->vel << 2;
         // Set timer for 2 seconds
-        set_timer(2000);
+        set_timer(2000, TIMER_2_BASE, false);
       }
       break;
 
@@ -86,7 +87,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
   }
 
   // Check for ability cool down
-  bool timerDone = timer_done();
+  bool timerDone = timer_done(TIMER_2_BASE);
   // Evasion wore off
   if (timerDone && player->state == EVASION) {
     // Player is no longer in evasion state
@@ -94,7 +95,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
     // Set speed back to normal
     player->vel = player->vel >> 2;
     // Set timer for cooldown for 30s
-    set_timer(30000);
+    set_timer(30000, TIMER_2_BASE, false);
   }
   // Cooldown is finished for evasion
   else if (timerDone) {
@@ -115,7 +116,11 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
     player->shoot_cooldown--;
   }
 
-  // TODO - update player's score
+  // Update player's score when base timer done counting down
+  timerDone = timer_done(TIMER_BASE);
+  if (timerDone && player->health > 0){
+    player->score++;
+  }
 }
 
 // Updates the player's cursor
@@ -126,7 +131,7 @@ void updateCursor(Cursor* cursor, MouseData mouse){
 
     // Check for out of bounds
     if (cursor->x_pos < 0) cursor->x_pos = 0;
-    else if (cursor->x_pos + cursor->width > SCREEN_WIDTH) cursor->x_pos = SCREEN_HEIGHT - cursor->width;
+    else if (cursor->x_pos + cursor->width > SCREEN_WIDTH) cursor->x_pos = SCREEN_WIDTH - cursor->width;
     if (cursor->y_pos < 0) cursor->y_pos = 0;
     else if (cursor->y_pos + cursor->height > SCREEN_HEIGHT) cursor->y_pos = SCREEN_HEIGHT - cursor->height;
 }

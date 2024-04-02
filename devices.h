@@ -29,10 +29,16 @@ void stop_timer();
 // Function used to delay program for specified time in milliseconds
 void delay(unsigned int time_delay);
 
-// Sets the timer for specified time (ms) and starts it
-void set_timer(unsigned int time);
+// Sets the specified timer for specified time (ms) and starts it
+void set_timer(unsigned int time, int timer_addr, bool cont);
 
-// Polls timer if it is done counting down
-bool timer_done();
+// Polls specified timer if it is done counting down
+bool timer_done(int timer_addr);
+
+/*********** HEX display ***************/
+// Sets hex display to zeros
+void init_hex();
+// Displays number to hex as BCD
+void set_hex(int v);
 
 #endif

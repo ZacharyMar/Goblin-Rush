@@ -5,7 +5,7 @@
 #include "projectile.h"
 
 // sets up back buffer for double buffering
-void init_double_buffer(short int* buffer1, short int* buffer2);
+void init_double_buffer(short int buffer1[240][512], short int buffer2[240][512]);
 
 // plots a single pixel onto the back frame buffer
 void plot_pixel(int x, int y, short int colour);
