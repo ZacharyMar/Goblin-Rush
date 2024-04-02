@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
-#define M_PI 3.14159265359
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define GOBLIN_MAX_SPEED 3
@@ -587,8 +586,8 @@ int pixel_buffer_start = 0; // global variable
 void wait_for_vsync();
 // Clears the screen to black
 void clear_screen();
-// draw any objects
-void draw();
+// draw all enemies and sprites
+void draw_goblins();
 // Function to add a Goblin to the list
 void add_goblin(Goblin** head, Goblin* new_goblin);
 // Function to create a new Goblin
@@ -614,7 +613,6 @@ short int Buffer2[240][512];
 volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
 int main(void){   
     init_double_buffer(pixel_ctrl_ptr);
-    populate_goblin_list();
     unsigned int counter = 0;
     unsigned int gob_count = 0;
     unsigned int bee_count = 0;
@@ -626,7 +624,7 @@ int main(void){
             printf("%d goblins!", gob_count);
             }
         counter ++;
-        draw();
+        draw_goblins();
     }
 }
 // populates list of goblins
@@ -696,7 +694,7 @@ void rand_direction(bool* right, bool* left, bool* up, bool* down){
         }
 }
 // draw all enemies and sprites
-void draw(){
+void draw_goblins(){
     clear_screen();
     // iterate through goblins
     Goblin* gob = goblinList;
