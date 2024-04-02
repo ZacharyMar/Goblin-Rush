@@ -19,6 +19,11 @@
 // Array helper
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 
+// Enemy related
+#define GOBLIN_HITBOX_OFFSET 15
+#define GOBLIN_HITBOX_WIDTH 15
+#define GOBLIN_HITBOX_HEIGHT 22
+
 // Colours
 #define YELLOW 0xFFE0
 #define RED 0xF800

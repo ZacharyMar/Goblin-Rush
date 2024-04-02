@@ -56,16 +56,31 @@ Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health,
 }
 
 // Function to add a Goblin to the list
-void add_goblin(Goblin** head, Goblin* new_goblin) {
-    if (*head == NULL) {
-        // If the list is empty, the new goblin becomes the head
-        *head = new_goblin;
-    } else {
-        // Otherwise, find the end of the list and add the new goblin there
-        Goblin* current = *head;
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        current->next = new_goblin;
+void add_goblin(GoblinList* list, Goblin* new_goblin) {
+    // Failed to allocate goblin
+    if (new_goblin == NULL) return;
+
+    // Adds goblin to tail of linked list
+    // List is empty
+    if (list->head == NULL){
+        list->head = new_goblin;
+        list->tail = new_goblin;
     }
+    // Add to tail
+    else{
+        list->tail->next = new_goblin;
+        list->tail = new_goblin;
+    }
+    list->count++;
+}
+
+// Used to free memory allocated for enemy list
+void freeEnemyList(GoblinList* list){
+    Goblin* cur = list->head;
+    while(cur != NULL){
+        Goblin* tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+    free(list);
 }

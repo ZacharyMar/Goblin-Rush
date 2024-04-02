@@ -32,6 +32,8 @@ void init_keyboard() {
 
 // Gets mouse data from PS2
 MouseData get_mouse_data() {
+  // Add busy wait loop before getting mouse data
+
   // Create mousedata struct
   MouseData mouse_data = {0, 0, 0};
 

@@ -7,6 +7,7 @@
 #include "player.h"
 #include "projectile.h"
 #include "structs.h"
+#include "enemies.h"
 
 // Declare globals here
 
@@ -63,6 +64,17 @@ int main() {
   projectile_list->tail = NULL;
   projectile_list->count = 0;
 
+  // Create list of enemies
+  GoblinList* goblin_list = malloc(sizeof(GoblinList));
+  // Unable to allocate memory - error
+  if (goblin_list == NULL){
+    return -1;
+  }
+  // Initialize pointers
+  goblin_list->head = 0;
+  goblin_list->tail = 0;
+  goblin_list->count = 0;
+
   // Setup score timer - player gains one score every 1 second
   set_timer(1000, TIMER_BASE, true);
 
@@ -89,6 +101,7 @@ int main() {
     // Any other updates???
 
     // Collision detection
+    enemyProjectileCollisionUpdate(projectile_list, goblin_list);
 
     // Refresh screen
     refresh_screen(player, cursor, projectile_list);
@@ -98,4 +111,5 @@ int main() {
 
   // Deallocate memory
   freeProjectileList(projectile_list);
+  freeEnemyList(goblin_list);
 }
