@@ -876,7 +876,7 @@ void add_goblin(Goblin** head, Goblin* new_goblin) {
 
 // Function to update x and y positions to follow a circular path
 void update_position_for_circle_path(unsigned int* x, unsigned int* y, unsigned int centerX, unsigned int centerY, unsigned int counter) {
-    const double angleIncrement = M_PI / 180; // Increment angle by 1 deg
+    const double angleIncrement = 3.14159265 / 180; // Increment angle by 1 deg
     double angle = counter * angleIncrement; // Calculate the current angle based on the counter
 
     // Calculate the new position
