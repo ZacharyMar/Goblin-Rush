@@ -855,6 +855,9 @@ void add_goblin(GoblinList* root, Goblin* new_goblin);
 Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health, 
                       unsigned char speed, unsigned char state, 
                       unsigned char frame, unsigned char frames, bool right, bool left, bool up, bool down);
+
+// Used to free memory allocated for enemy list
+void freeGoblinList(GoblinList* list);
 /******************
  * Main
  */
@@ -956,6 +959,7 @@ int main() {
 
   // Deallocate memory
   freeProjectileList(projectile_list);
+  freeGoblinList(goblin_list);
 }
 
 /************** MOUSE + KEYBOARD **********************/
@@ -1753,6 +1757,7 @@ bool in_bounds(int x, int y, unsigned int width, unsigned int height){
 
 // draws an enemy sprite starting from its top left corner (x_offset, y_offset)
 void draw_enemy_sprite_frame(unsigned short int** sprite_ptr, unsigned int x_offset, unsigned int y_offset, unsigned int frame_idx, unsigned int num_frames, bool reverse){
+  // bounds detection, will remove in final game
     if(!in_bounds(x_offset, y_offset, 48, 48)){
       printf("out of bounds at (%d, %d)", x_offset, y_offset); 
       return;  
@@ -1805,14 +1810,13 @@ Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health,
 
 // Function to add a Goblin to the list
 void add_goblin(GoblinList* root, Goblin* new_goblin) {
-  Goblin* node = root->head;
-    if (node == NULL) {
+    if (root->head == NULL) {
         // If the list is empty, the new goblin becomes the head
         root->head = new_goblin;
         root->count = 1;
     } else {
         // Otherwise, find the end of the list and add the new goblin there
-        Goblin* current = node;
+        Goblin* current = root->head;
         while (current->next != NULL) {
             current = current->next;
         }
@@ -1820,4 +1824,14 @@ void add_goblin(GoblinList* root, Goblin* new_goblin) {
         root->tail = current->next;
         root->count++;
     }
+}
+// Used to free memory allocated for enemy list
+void freeGoblinList(GoblinList* list){
+    Goblin* cur = list->head;
+    while(cur != NULL){
+        Goblin* tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+    free(list);
 }

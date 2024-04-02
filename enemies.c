@@ -75,7 +75,7 @@ void add_goblin(GoblinList* list, Goblin* new_goblin) {
 }
 
 // Used to free memory allocated for enemy list
-void freeEnemyList(GoblinList* list){
+void freeGoblinList(GoblinList* list){
     Goblin* cur = list->head;
     while(cur != NULL){
         Goblin* tmp = cur;
