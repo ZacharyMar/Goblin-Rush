@@ -570,7 +570,6 @@ unsigned short int cursor_sprite[13][13] = {
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define BOARD "DE1-SoC"
-// #define M_PI 3.14159265359
 
 /* Memory */
 #define DDR_BASE 0x40000000
@@ -1337,11 +1336,12 @@ void draw_cursor(const Cursor cursor) {
     for(int j = 0; j < cursor.width; j++){
       // if cursor is on screen
       if(cursor_sprite[i][j] != 0x0000 && in_bounds(cursor.x_pos - (cursor.width/2) , cursor.y_pos - (cursor.height/2), cursor.width, cursor.height)){
+        // normalize cursor to plot at the center of cursor.x and cursor.y
         plot_pixel(cursor.x_pos + j - (cursor.width/2),
               cursor.y_pos + i - (cursor.height/2), cursor_sprite[i][j]);
+      }
     }
-  }
-}
+  } 
 }
 
 // Draws the projectiles to the screen
