@@ -1,8 +1,8 @@
 #include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 // sprite sheets for background and goblin animations
 unsigned short int bg[240][512] = {
     {0x54A8, 0x6D29, 0x6D29, 0x6D29, 0x64E8, 0x4467, 0x54A8, 0x6D29, 0x6D29, 0x64E8, 0x54A8, 0x6D29, 0x6D29, 0x6D29, 0x64E8, 0x54A8, 0x6D29, 0x6D29, 0x6D29, 0x64E8, 0x4467, 0x4467, 0x4467, 0x4467, 0x3C68, 0x3C68, 0x4CA8, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x754E, 0x8DD7, 0xAE79, 0xAE79, 0xAE79, 0x95F3, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x64E8, 0x4467, 0x3C28, 0x5449, 0x6D09, 0x3C68, 0x4CA8, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6DAB, 0x6E6F, 0x6E6F, 0x5DAE, 0x4CAB, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x856A, 0xA5EA, 0x8DAA, 0x6D29, 0x6D29, 0x6D29, 0x6D29, 0x7428, 0x8B07, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0x9B88, 0x92E7, 0x93AA, 0xAD8F, 0x9C6C, 0x8B07, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0x9B88, 0x92E7, 0x93AA, 0xAD8F, 0x9C6C, 0x8B07, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, 0xA3C8, },
@@ -546,7 +546,6 @@ unsigned short int goblin_U_Attack[][288] = {
     {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, },
     {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, },
 };
-
 unsigned short int cursor_sprite[13][13] = {
     {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xF800, 0xF800, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, },
     {0x0000, 0x0000, 0x0000, 0x0000, 0xF800, 0xF800, 0xF800, 0xF800, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, },
@@ -562,6 +561,7 @@ unsigned short int cursor_sprite[13][13] = {
     {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xF800, 0xF800, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, },
     {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xF800, 0xF800, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, },
 };
+
 
 /*************
  * Constants
@@ -755,30 +755,31 @@ typedef struct ProjectileList {
   int count;
 } ProjectileList;
 
- // struct to store goblin information
-typedef struct Goblin{
-    // Location of goblin
-    int x_pos;
-    int y_pos;
+// struct to store goblin information
+typedef struct Goblin {
+  // Location of goblin
+  int x_pos;
+  int y_pos;
 
-    // health of the goblin
-    unsigned char health;
-    // speed of the goblin
-    unsigned char speed;
-    // current goblin state
-    unsigned char state;
-    // Used to determine the current frame of the animation
-    unsigned char current_frame;
-    // Used to determine the number of frames in the current animation being played
-    unsigned char frames_in_animation;
-      // Boolean to determine direction of travel
-    bool right;
-    bool left;
-    bool up;
-    bool down;
-    // next pointer
-    struct Goblin* next;
-}Goblin;
+  // health of the goblin
+  unsigned char health;
+  // speed of the goblin
+  unsigned char speed;
+  // current goblin state
+  unsigned char state;
+  // Used to determine the current frame of the animation
+  unsigned char current_frame;
+  // Used to determine the number of frames in the current animation being
+  // played
+  unsigned char frames_in_animation;
+  // Boolean to determine direction of travel
+  bool right;
+  bool left;
+  bool up;
+  bool down;
+  // next pointer
+  struct Goblin* next;
+} Goblin;
 
 // Linked list to store goblins
 typedef struct GoblinList {
@@ -790,7 +791,7 @@ typedef struct GoblinList {
 } GoblinList;
 
 // global variables
-int pixel_buffer_start = 0; // global variable
+int pixel_buffer_start = 0;  // global variable
 
 /************** DEVICES ********************/
 
@@ -841,7 +842,7 @@ bool createProjectile(ProjectileList* list, const Player player,
 // Updates projectile position
 void updateProjectilePosition(ProjectileList* list);
 // Returns if a projectile collided with an enemy
-bool checkProjectileCollision(Projectile * projectile, GoblinList* g_list);
+bool checkProjectileCollision(Projectile* projectile, GoblinList* g_list);
 // Performs all updates regarding collision with projectiles and enemies
 void enemyProjectileCollisionUpdate(ProjectileList* p_list, GoblinList* g_list);
 // Used to free memory use for projectile list
@@ -880,13 +881,17 @@ void rand_direction(bool* right, bool* left, bool* up, bool* down);
 // returns whether or not a sprite is within the screen
 bool in_bounds(int x, int y, unsigned int width, unsigned int height);
 // draws an enemy sprite starting from its top left corner (x_offset, y_offset)
-void draw_enemy_sprite_frame(unsigned short int** sprite_ptr, unsigned int x_offset, unsigned int y_offset, unsigned int frame_idx, unsigned int num_frames, bool reverse);
+void draw_enemy_sprite_frame(unsigned short int** sprite_ptr,
+                             unsigned int x_offset, unsigned int y_offset,
+                             unsigned int frame_idx, unsigned int num_frames,
+                             bool reverse);
 // Function to add a Goblin to the list
 void add_goblin(GoblinList* root, Goblin* new_goblin);
 // Function to create a new Goblin
-Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health, 
-                      unsigned char speed, unsigned char state, 
-                      unsigned char frame, unsigned char frames, bool right, bool left, bool up, bool down);
+Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health,
+                      unsigned char speed, unsigned char state,
+                      unsigned char frame, unsigned char frames, bool right,
+                      bool left, bool up, bool down);
 // Checks for collisions of goblin and player
 bool updateCollisionPlayer(Player* player, GoblinList* g_list);
 // updates the goblin object based on player location
@@ -953,7 +958,7 @@ int main() {
   // Create list of goblins
   GoblinList* goblin_list = malloc(sizeof(GoblinList));
   // Unable to allocate memory - error
-  if (goblin_list == NULL){
+  if (goblin_list == NULL) {
     return -1;
   }
   // Initialize pointers
@@ -979,10 +984,10 @@ int main() {
     // Update enemies
     update_goblins(&player, goblin_list);
     // add goblin
-    if(goblin_list->count < 1 && goblin_spawn_counter % 100 == 0){
+    if (goblin_list->count < 1 && goblin_spawn_counter % 100 == 0) {
       new_goblin(goblin_list);
     }
-    goblin_spawn_counter ++;
+    goblin_spawn_counter++;
 
     // Create new projectile if player is currently shooting
     if (player.state == SHOOTING) {
@@ -996,7 +1001,7 @@ int main() {
     // Collision detection
     enemyProjectileCollisionUpdate(projectile_list, goblin_list);
     // Enemy hit player
-    if (updateCollisionPlayer(&player, goblin_list)){
+    if (updateCollisionPlayer(&player, goblin_list)) {
       collisionHandler(&player);
     }
 
@@ -1303,8 +1308,8 @@ void set_hex(int v) {
 
 // clears the screen to the background image
 void clear_screen() {
-  volatile int *pixel_ctrl_ptr = (int *)0xff203020;
-  int *back_buffer = *(pixel_ctrl_ptr + 1);
+  volatile int* pixel_ctrl_ptr = (int*)0xff203020;
+  int* back_buffer = *(pixel_ctrl_ptr + 1);
   memcpy(back_buffer, bg, sizeof(bg));
 }
 // Plots a pixel at the specified location in the back buffer
@@ -1343,7 +1348,7 @@ void init_double_buffer(short int buffer1[240][512],
 
   // Set back buffer
   *(pixel_ctrl_ptr + 1) = (int)buffer2;
-  pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
+  pixel_buffer_start = *(pixel_ctrl_ptr + 1);  // we draw on the back buffer
   clear_screen();
 }
 
@@ -1362,16 +1367,15 @@ void draw_player(const Player player) {
 // Draws the cursor to the screen
 void draw_cursor(const Cursor cursor) {
   // draw sprite for cursor
-  for(int i = 0; i < cursor.height; i++){
-    for(int j = 0; j < cursor.width; j++){
+  for (int i = 0; i < cursor.height; i++) {
+    for (int j = 0; j < cursor.width; j++) {
       // if cursor is on screen
-      if(cursor_sprite[i][j] != 0x0000 && in_bounds(cursor.x_pos - (cursor.width/2) , cursor.y_pos - (cursor.height/2), cursor.width, cursor.height)){
+      if (cursor_sprite[i][j] != 0x0000) {
         // normalize cursor to plot at the center of cursor.x and cursor.y
-        plot_pixel(cursor.x_pos + j - (cursor.width/2),
-              cursor.y_pos + i - (cursor.height/2), cursor_sprite[i][j]);
+        plot_pixel(cursor.x_pos + j, cursor.y_pos + i, cursor_sprite[i][j]);
       }
     }
-  } 
+  }
 }
 
 // Draws the projectiles to the screen
@@ -1400,8 +1404,8 @@ void refresh_screen(const Player player, const Cursor Cursor,
   // Draw elements to screen
   draw_player(player);
   draw_projectiles(list);
-  draw_cursor(Cursor);
   draw_goblins(player, goblin_list);
+  draw_cursor(Cursor);
 
   // Call buffer swap
   wait_for_vsync();
@@ -1435,8 +1439,8 @@ bool createProjectile(ProjectileList* list, const Player player,
   dy /= magnitude;
 
   // Load information
-  projectile->dx = dx*4;
-  projectile->dy = dy*4;
+  projectile->dx = dx * 4;
+  projectile->dy = dy * 4;
   projectile->x_pos = player.x_pos + (player.width >> 1);
   projectile->y_pos = player.y_pos + (player.height >> 1);
   projectile->next = NULL;
@@ -1531,32 +1535,32 @@ bool checkProjectileCollision(Projectile* projectile, GoblinList* g_list) {
               cur->y_pos + GOBLIN_HITBOX_OFFSET &&
           projectile->y_pos + projectile->height <
               cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT))) {
-        // Decrease health of goblin
-        cur->health--;
+      // Decrease health of goblin
+      cur->health--;
 
-        // Goblin is dead
-        if (cur->health <= 0){
-          // TODO play death animation
-          // Remove from linked list
-          // At head
-          if (prev == NULL){
-            g_list->head = cur->next;
-            g_list->tail = cur->next == NULL ? NULL : g_list->tail;
-            free(cur);
-          }
-          // Somewhere else in list
-          else{
-            prev->next = cur->next;
-            free(cur);
-            // Check if tail was deleted
-            g_list->tail = prev->next == NULL ? prev : g_list->tail;
-          }
-
-          // Decrement count
-          g_list->count--;
+      // Goblin is dead
+      if (cur->health <= 0) {
+        // TODO play death animation
+        // Remove from linked list
+        // At head
+        if (prev == NULL) {
+          g_list->head = cur->next;
+          g_list->tail = cur->next == NULL ? NULL : g_list->tail;
+          free(cur);
         }
-        // Return goblin projectile collided with
-        return true;
+        // Somewhere else in list
+        else {
+          prev->next = cur->next;
+          free(cur);
+          // Check if tail was deleted
+          g_list->tail = prev->next == NULL ? prev : g_list->tail;
+        }
+
+        // Decrement count
+        g_list->count--;
+      }
+      // Return goblin projectile collided with
+      return true;
     }
     // Traverse list
     prev = cur;
@@ -1567,7 +1571,8 @@ bool checkProjectileCollision(Projectile* projectile, GoblinList* g_list) {
 }
 
 // Performs all updates regarding collision with projectiles and enemies
-void enemyProjectileCollisionUpdate(ProjectileList* p_list, GoblinList* g_list){
+void enemyProjectileCollisionUpdate(ProjectileList* p_list,
+                                    GoblinList* g_list) {
   // No goblins ignore
   if (g_list->head == NULL) return;
 
@@ -1575,9 +1580,9 @@ void enemyProjectileCollisionUpdate(ProjectileList* p_list, GoblinList* g_list){
   Projectile* cur = p_list->head;
   Projectile* prev = NULL;
 
-  while (cur != NULL){
+  while (cur != NULL) {
     // Check if current projectile collided with any enemy
-    if (checkProjectileCollision(cur, g_list)){
+    if (checkProjectileCollision(cur, g_list)) {
       // Projectile collided with enemy
       // Remove projectile from list
 
@@ -1610,7 +1615,7 @@ void enemyProjectileCollisionUpdate(ProjectileList* p_list, GoblinList* g_list){
       p_list->count--;
     }
     // Traverse normally
-    else{
+    else {
       prev = cur;
       cur = cur->next;
     }
@@ -1769,12 +1774,12 @@ void updateCursor(Cursor* cursor, MouseData mouse) {
 }
 
 // Function called to handle when player hit by enemy
-void collisionHandler(Player* player){
+void collisionHandler(Player* player) {
   // Decrease health
   player->health--;
 
   // Check if dead
-  if (player->health <= 0){
+  if (player->health <= 0) {
     player->state = DEAD;
     return;
   }
@@ -1790,189 +1795,203 @@ void collisionHandler(Player* player){
 }
 
 // updates the goblin object based on player location
-void update_goblins(const Player* player, GoblinList* root){
+void update_goblins(const Player* player, GoblinList* root) {
   // iterate through goblins
-    Goblin* gob = root->head;
-    while(gob != NULL){
-        // update goblin parameters
-        int dx = player->x_pos - (gob->x_pos + 24); // true center of sprite
-        int dy = player->y_pos - (gob->y_pos + 24); 
+  Goblin* gob = root->head;
+  while (gob != NULL) {
+    // update goblin parameters
+    int dx = player->x_pos - (gob->x_pos + 24);  // true center of sprite
+    int dy = player->y_pos - (gob->y_pos + 24);
 
-      // distance moved in each direction
-      int move_x = 0, move_y = 0;
+    // distance moved in each direction
+    int move_x = 0, move_y = 0;
 
-      // directional booleans
-      gob->right = dx > 0 ? true : false;
-      gob->left = !gob->right;
-      gob->up = dy < 0 ? true : false;
-      gob->down = !gob->up;
-      
-      double magnitude = sqrt(dx * dx + dy * dy); // magnitude
-      // attack if close enough
-      gob->state = magnitude < GOBLIN_ATTACK_RANGE ? 1 : 0;
-      // avoid division by zero
-      if (magnitude > 0) {
-          move_x = (int) ((dx / magnitude) * gob->speed);
-          move_y = (int) ((dy / magnitude) * gob->speed);
+    // directional booleans
+    gob->right = dx > 0 ? true : false;
+    gob->left = !gob->right;
+    gob->up = dy < 0 ? true : false;
+    gob->down = !gob->up;
+
+    double magnitude = sqrt(dx * dx + dy * dy);  // magnitude
+    // attack if close enough
+    gob->state = magnitude < GOBLIN_ATTACK_RANGE ? 1 : 0;
+    // avoid division by zero
+    if (magnitude > 0) {
+      move_x = (int)((dx / magnitude) * gob->speed);
+      move_y = (int)((dy / magnitude) * gob->speed);
+    }
+
+    int new_x = gob->x_pos + move_x;
+    int new_y = gob->y_pos + move_y;
+    // update boolean parameters based on whether or not next move is in bounds
+    if (!in_bounds(new_x, new_y, 48, 48)) {
+      if (new_x <= BOUNDARY) {
+        gob->right = true;
+        gob->left = false;
       }
+      if (new_x + 48 + BOUNDARY >= SCREEN_WIDTH) {
+        gob->right = false;
+        gob->left = true;
+      }
+      if (new_y <= BOUNDARY) {
+        gob->up = true;
+        gob->down = false;
+      }
+      if (new_y + 48 + BOUNDARY >= SCREEN_HEIGHT) {
+        gob->up = false;
+        gob->down = true;
+      }
+      // new dx and dy
+      move_x = gob->left || gob->right ? gob->speed : 0;
+      move_y = gob->up || gob->down ? gob->speed : 0;
+      move_x = gob->right ? move_x : -move_x;
+      move_y = gob->up ? move_y : -move_y;
+    }
 
-        int new_x = gob->x_pos + move_x;
-        int new_y = gob->y_pos + move_y;
-        // update boolean parameters based on whether or not next move is in bounds
-        if(!in_bounds(new_x, new_y, 48, 48)){
-            if(new_x <= BOUNDARY){
-                gob->right = true;
-                gob->left = false;
-            }
-            if(new_x + 48 + BOUNDARY >= SCREEN_WIDTH){
-                gob->right = false;
-                gob->left = true;
-            }
-            if(new_y <= BOUNDARY){
-                gob->up = true;
-                gob->down = false;
-            }
-            if(new_y + 48 + BOUNDARY >= SCREEN_HEIGHT){
-                gob->up = false;
-                gob->down = true;
-            }
-            // new dx and dy 
-            move_x = gob->left || gob->right ? gob->speed : 0;
-            move_y = gob->up || gob->down ? gob->speed : 0;
-            move_x = gob->right ? move_x : -move_x;
-            move_y = gob->up ? move_y : -move_y;
-        }
-        
-        // update x and y pos along with sprite sheet index
-        gob->x_pos += move_x;
-        gob->y_pos += move_y;
-        gob->current_frame = (gob->current_frame + 1) % gob->frames_in_animation;
-        gob = gob->next;
+    // update x and y pos along with sprite sheet index
+    gob->x_pos += move_x;
+    gob->y_pos += move_y;
+    gob->current_frame = (gob->current_frame + 1) % gob->frames_in_animation;
+    gob = gob->next;
   }
 }
 // draw all enemies and sprites
-void draw_goblins(const Player player, GoblinList* root){
-    // iterate through goblins
-    Goblin* gob = root->head;
-    while(gob != NULL){
-        // select sprite sheet for drawing
-        unsigned short int** sprite_sheet = NULL;
-        // reverse for right movement
-        bool reverse = false;
+void draw_goblins(const Player player, GoblinList* root) {
+  // iterate through goblins
+  Goblin* gob = root->head;
+  while (gob != NULL) {
+    // select sprite sheet for drawing
+    unsigned short int** sprite_sheet = NULL;
+    // reverse for right movement
+    bool reverse = false;
 
-      // goblin moving right
-      if(gob->right){
-          reverse = true;
-          sprite_sheet = gob->state == 0 ? goblin_S_Walk : goblin_S_Attack;
+    // goblin moving right
+    if (gob->right) {
+      reverse = true;
+      sprite_sheet = gob->state == 0 ? goblin_S_Walk : goblin_S_Attack;
       // goblin moving left
-      } else if(gob->left){
-          sprite_sheet = gob->state == 0 ? goblin_S_Walk : goblin_S_Attack;
+    } else if (gob->left) {
+      sprite_sheet = gob->state == 0 ? goblin_S_Walk : goblin_S_Attack;
       // goblin moving up (sprite sheet orientation is mirrored on x axis)
-      } else if(!gob->up && gob->down){
-          sprite_sheet = gob->state == 0 ? goblin_U_Walk : goblin_U_Attack;
-      
+    } else if (!gob->up && gob->down) {
+      sprite_sheet = gob->state == 0 ? goblin_U_Walk : goblin_U_Attack;
+
       // goblin moving down
-      } else if(gob->up && !gob->down){
-          sprite_sheet = gob->state == 0 ? goblin_D_Walk : goblin_D_Attack;
-      }
-      draw_enemy_sprite_frame(sprite_sheet, gob->x_pos, gob->y_pos, gob->current_frame, gob->frames_in_animation, reverse);
-      gob = gob->next;
+    } else if (gob->up && !gob->down) {
+      sprite_sheet = gob->state == 0 ? goblin_D_Walk : goblin_D_Attack;
+    }
+    draw_enemy_sprite_frame(sprite_sheet, gob->x_pos, gob->y_pos,
+                            gob->current_frame, gob->frames_in_animation,
+                            reverse);
+    gob = gob->next;
   }
 }
 
 // populates single goblin
-void new_goblin(GoblinList* root){
+void new_goblin(GoblinList* root) {
   // defaults
   bool left = false, right = false, up = false, down = false;
   // set direction booleans
   rand_direction(&right, &left, &up, &down);
-  Goblin* g = create_goblin(rand() % (SCREEN_WIDTH - 48 - BOUNDARY) + BOUNDARY, rand() % (SCREEN_HEIGHT- 48 - BOUNDARY) + BOUNDARY, 3, (rand() % GOBLIN_MAX_SPEED) + 1, 0x0, 0, 6, right, left, up, down); // state: 0 for walk 1 for attack
+  Goblin* g =
+      create_goblin(rand() % (SCREEN_WIDTH - 48 - BOUNDARY) + BOUNDARY,
+                    rand() % (SCREEN_HEIGHT - 48 - BOUNDARY) + BOUNDARY, 3,
+                    (rand() % GOBLIN_MAX_SPEED) + 1, 0x0, 0, 6, right, left, up,
+                    down);  // state: 0 for walk 1 for attack
   // add new goblin to linked list
-  add_goblin(root, g);   
+  add_goblin(root, g);
 }
 
 // returns random direction
-void rand_direction(bool* right, bool* left, bool* up, bool* down){
-unsigned int dir = rand() % 8;
-  switch(dir){
-  // right
-  case(0):
+void rand_direction(bool* right, bool* left, bool* up, bool* down) {
+  unsigned int dir = rand() % 8;
+  switch (dir) {
+    // right
+    case (0):
       *right = true;
       break;
-  // up and to the right
-  case(1):
+    // up and to the right
+    case (1):
       *right = true;
       *up = true;
       break;
-  // up
-  case(2):
+    // up
+    case (2):
       *up = true;
       break;
-  // up and to the left
-  case(3):
+    // up and to the left
+    case (3):
       *up = true;
       *left = true;
       break;
-  // left
-  case(4):
+    // left
+    case (4):
       *left = true;
       break;
-  // down and to the left
-  case(5):
+    // down and to the left
+    case (5):
       *left = true;
       *down = true;
       break;
-  // down
-  case(6):
+    // down
+    case (6):
       *down = true;
       break;
-  // down and to the right
-  default:
+    // down and to the right
+    default:
       *down = true;
       *right = true;
   }
 }
 // returns whether or not a sprite is within the screen
-bool in_bounds(int x, int y, unsigned int width, unsigned int height){
-  return x > BOUNDARY && x + width + BOUNDARY < SCREEN_WIDTH && y > BOUNDARY && y + height + BOUNDARY < SCREEN_HEIGHT;
+bool in_bounds(int x, int y, unsigned int width, unsigned int height) {
+  return x > BOUNDARY && x + width + BOUNDARY < SCREEN_WIDTH && y > BOUNDARY &&
+         y + height + BOUNDARY < SCREEN_HEIGHT;
 }
 
 // draws an enemy sprite starting from its top left corner (x_offset, y_offset)
-void draw_enemy_sprite_frame(unsigned short int** sprite_ptr, unsigned int x_offset, unsigned int y_offset, unsigned int frame_idx, unsigned int num_frames, bool reverse){
+void draw_enemy_sprite_frame(unsigned short int** sprite_ptr,
+                             unsigned int x_offset, unsigned int y_offset,
+                             unsigned int frame_idx, unsigned int num_frames,
+                             bool reverse) {
   // bounds detection, will remove in final game
-  if(!in_bounds(x_offset, y_offset, 48, 48)){
-    printf("out of bounds at (%d, %d)", x_offset, y_offset); 
-    return;  
-  } 
+  if (!in_bounds(x_offset, y_offset, 48, 48)) {
+    printf("out of bounds at (%d, %d)", x_offset, y_offset);
+    return;
+  }
   // iterate through the height of a frame
   unsigned int sheet_height = 48;
   unsigned int sheet_width = 288;
   unsigned int frame_width = sheet_width / num_frames;
-  for(unsigned int i = 0; i < sheet_height; i++){
-      // iterate through the width of a frame
-      for(unsigned int j = 0; j < frame_width; j++){
-          // Calculate the index to read from the sprite sheet based on direction
-          unsigned int sprite_index = reverse ? (frame_width - 1 - j) : j;
-          sprite_index += (frame_width * frame_idx);
+  for (unsigned int i = 0; i < sheet_height; i++) {
+    // iterate through the width of a frame
+    for (unsigned int j = 0; j < frame_width; j++) {
+      // Calculate the index to read from the sprite sheet based on direction
+      unsigned int sprite_index = reverse ? (frame_width - 1 - j) : j;
+      sprite_index += (frame_width * frame_idx);
 
-          // remove background and draw pixel if it's not white (0xFFFF)
-          if(((unsigned short int*)sprite_ptr)[i*sheet_width+sprite_index] != 0xFFFF){
-              plot_pixel(x_offset + j, y_offset + i,((unsigned short int*)sprite_ptr)[i*sheet_width+sprite_index]);
-          }
+      // remove background and draw pixel if it's not white (0xFFFF)
+      if (((unsigned short int*)sprite_ptr)[i * sheet_width + sprite_index] !=
+          0xFFFF) {
+        plot_pixel(
+            x_offset + j, y_offset + i,
+            ((unsigned short int*)sprite_ptr)[i * sheet_width + sprite_index]);
       }
+    }
   }
 }
 
 // Function to create a new Goblin
-Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health, 
-                      unsigned char speed, unsigned char state, 
-                      unsigned char frame, unsigned char frames, bool right, bool left, bool up, bool down) {
+Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health,
+                      unsigned char speed, unsigned char state,
+                      unsigned char frame, unsigned char frames, bool right,
+                      bool left, bool up, bool down) {
   Goblin* new_goblin = (Goblin*)malloc(sizeof(Goblin));
   if (new_goblin == NULL) {
-      // cant allocate mem
-      return NULL;
+    // cant allocate mem
+    return NULL;
   }
-  
+
   // Initialize goblin properties
   new_goblin->x_pos = x;
   new_goblin->y_pos = y;
@@ -2000,7 +2019,7 @@ void add_goblin(GoblinList* root, Goblin* new_goblin) {
     // Otherwise, find the end of the list and add the new goblin there
     Goblin* current = root->head;
     while (current->next != NULL) {
-        current = current->next;
+      current = current->next;
     }
     current->next = new_goblin;
     root->tail = current->next;
@@ -2019,11 +2038,13 @@ bool updateCollisionPlayer(Player* player, GoblinList* g_list) {
       if (cur->left) {
         if (((player->x_pos >
                   cur->x_pos + GOBLIN_HITBOX_OFFSET - GOBLIN_ATTACK_BOX_WIDTH &&
-              player->x_pos < cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_ATTACK_BOX_PADDING) ||
+              player->x_pos < cur->x_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_PADDING) ||
              (player->x_pos + player->width >
                   cur->x_pos + GOBLIN_HITBOX_OFFSET - GOBLIN_ATTACK_BOX_WIDTH &&
-              player->x_pos + player->width <
-                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_ATTACK_BOX_PADDING)) &&
+              player->x_pos + player->width < cur->x_pos +
+                                                  GOBLIN_HITBOX_OFFSET +
+                                                  GOBLIN_ATTACK_BOX_PADDING)) &&
             ((player->y_pos > cur->y_pos + GOBLIN_HITBOX_OFFSET +
                                   GOBLIN_ATTACK_BOX_Y_OFFSET &&
               player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET +
@@ -2038,13 +2059,15 @@ bool updateCollisionPlayer(Player* player, GoblinList* g_list) {
           return true;
         }
       } else if (cur->right) {
-        if (((player->x_pos >
-                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH - GOBLIN_ATTACK_BOX_PADDING &&
+        if (((player->x_pos > cur->x_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_HITBOX_WIDTH -
+                                  GOBLIN_ATTACK_BOX_PADDING &&
               player->x_pos < cur->x_pos + GOBLIN_HITBOX_OFFSET +
                                   GOBLIN_HITBOX_WIDTH +
                                   GOBLIN_ATTACK_BOX_WIDTH) ||
              (player->x_pos + player->width >
-                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH - GOBLIN_ATTACK_BOX_PADDING &&
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH -
+                      GOBLIN_ATTACK_BOX_PADDING &&
               player->x_pos + player->width <
                   cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH +
                       GOBLIN_ATTACK_BOX_WIDTH)) &&
@@ -2069,13 +2092,15 @@ bool updateCollisionPlayer(Player* player, GoblinList* g_list) {
                   cur->x_pos + GOBLIN_HITBOX_OFFSET &&
               player->x_pos + player->width <
                   cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH)) &&
-            ((player->y_pos >
-                  cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT - GOBLIN_ATTACK_BOX_PADDING &&
+            ((player->y_pos > cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_HITBOX_HEIGHT -
+                                  GOBLIN_ATTACK_BOX_PADDING &&
               player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET +
                                   GOBLIN_HITBOX_HEIGHT +
                                   GOBLIN_ATTACK_BOX_HEIGHT) ||
              (player->y_pos + player->height >
-                  cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT - GOBLIN_ATTACK_BOX_PADDING &&
+                  cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT -
+                      GOBLIN_ATTACK_BOX_PADDING &&
               player->y_pos + player->height <
                   cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT +
                       GOBLIN_ATTACK_BOX_HEIGHT))) {
@@ -2089,13 +2114,16 @@ bool updateCollisionPlayer(Player* player, GoblinList* g_list) {
                   cur->x_pos + GOBLIN_HITBOX_OFFSET &&
               player->x_pos + player->width <
                   cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH)) &&
-            ((player->y_pos >
-                  cur->y_pos + GOBLIN_HITBOX_OFFSET - GOBLIN_ATTACK_BOX_HEIGHT &&
-              player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_ATTACK_BOX_PADDING) ||
-             (player->y_pos + player->height >
-                  cur->y_pos + GOBLIN_HITBOX_OFFSET - GOBLIN_ATTACK_BOX_HEIGHT &&
+            ((player->y_pos > cur->y_pos + GOBLIN_HITBOX_OFFSET -
+                                  GOBLIN_ATTACK_BOX_HEIGHT &&
+              player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_PADDING) ||
+             (player->y_pos + player->height > cur->y_pos +
+                                                   GOBLIN_HITBOX_OFFSET -
+                                                   GOBLIN_ATTACK_BOX_HEIGHT &&
               player->y_pos + player->height <
-                  cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_ATTACK_BOX_PADDING))) {
+                  cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                      GOBLIN_ATTACK_BOX_PADDING))) {
           return true;
         }
       }
@@ -2107,12 +2135,12 @@ bool updateCollisionPlayer(Player* player, GoblinList* g_list) {
 }
 
 // Used to free memory allocated for enemy list
-void freeGoblinList(GoblinList* list){
+void freeGoblinList(GoblinList* list) {
   Goblin* cur = list->head;
-  while(cur != NULL){
-      Goblin* tmp = cur;
-      cur = cur->next;
-      free(tmp);
+  while (cur != NULL) {
+    Goblin* tmp = cur;
+    cur = cur->next;
+    free(tmp);
   }
   free(list);
 }
