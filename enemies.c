@@ -1,4 +1,7 @@
 #include "enemies.h"
+
+#include <stdlib.h>
+#include "player.h"
 #include "constants.h"
 #include <stdlib.h>
 #include "player.h"
@@ -117,65 +120,195 @@ void rand_direction(bool* right, bool* left, bool* up, bool* down){
         }
 }
 // returns whether or not a sprite is within the screen
-bool in_bounds(int x, int y, unsigned int width, unsigned int height){
-    return x > BOUNDARY && x + width + BOUNDARY < SCREEN_WIDTH && y > BOUNDARY && y + height + BOUNDARY < SCREEN_HEIGHT;
+bool in_bounds(int x, int y, unsigned int width, unsigned int height) {
+  return x > BOUNDARY && x + width + BOUNDARY < SCREEN_WIDTH && y > BOUNDARY &&
+         y + height + BOUNDARY < SCREEN_HEIGHT;
 }
 
+// draws an enemy sprite starting from its top left corner (x_offset, y_offset)
+void draw_enemy_sprite_frame(unsigned short int sprite_ptr[][288],
+                             unsigned int x_offset, unsigned int y_offset,
+                             unsigned int frame_idx, unsigned int num_frames,
+                             bool reverse) {
+  // iterate through the height of a frame
+  unsigned int sheet_height = 48;
+  unsigned int sheet_width = ARRAYSIZE(sprite_ptr[0]);
+  unsigned int frame_width = sheet_width / num_frames;
+  for (unsigned int i = 0; i < sheet_height; i++) {
+    // iterate through the width of a frame
+    for (unsigned int j = 0; j < frame_width; j++) {
+      // Calculate the index to read from the sprite sheet based on direction
+      unsigned int sprite_index = reverse ? (frame_width - 1 - j) : j;
+      sprite_index += (frame_width * frame_idx);
 
+      // remove background and draw pixel if it's not white (0xFFFF)
+      if (sprite_ptr[i][sprite_index] != 0xFFFF) {
+        plot_pixel(x_offset + j, y_offset + i, sprite_ptr[i][sprite_index]);
+      }
+    }
+  }
+}
 
 // Function to create a new Goblin
-Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health, 
-                      unsigned char speed, unsigned char state, 
-                      unsigned char frame, unsigned char frames, bool right, bool left, bool up, bool down) {
-    Goblin* new_goblin = (Goblin*)malloc(sizeof(Goblin));
-    if (new_goblin == NULL) {
-        // cant allocate mem
-        return NULL;
-    }
-    
-    // Initialize goblin properties
-    new_goblin->x_pos = x;
-    new_goblin->y_pos = y;
-    new_goblin->health = health;
-    new_goblin->speed = speed;
-    new_goblin->state = state;
-    new_goblin->current_frame = frame;
-    new_goblin->frames_in_animation = frames;
-    new_goblin->right = right;
-    new_goblin->left = left;
-    new_goblin->up = up;
-    new_goblin->down = down;
-    new_goblin->next = NULL;
+Goblin* create_goblin(unsigned int x, unsigned int y, unsigned char health,
+                      unsigned char speed, unsigned char state,
+                      unsigned char frame, unsigned char frames, bool right,
+                      bool left, bool up, bool down) {
+  Goblin* new_goblin = (Goblin*)malloc(sizeof(Goblin));
+  if (new_goblin == NULL) {
+    // cant allocate mem
+    return NULL;
+  }
 
-    return new_goblin;
+  // Initialize goblin properties
+  new_goblin->x_pos = x;
+  new_goblin->y_pos = y;
+  new_goblin->health = health;
+  new_goblin->speed = speed;
+  new_goblin->state = state;
+  new_goblin->current_frame = frame;
+  new_goblin->frames_in_animation = frames;
+  new_goblin->right = right;
+  new_goblin->left = left;
+  new_goblin->up = up;
+  new_goblin->down = down;
+  new_goblin->next = NULL;
+
+  return new_goblin;
 }
 
 // Function to add a Goblin to the list
-void add_goblin(GoblinList* root, Goblin* new_goblin) {
-    if (root->head == NULL) {
-        // If the list is empty, the new goblin becomes the head
-        root->head = new_goblin;
-        root->count = 1;
-        root->head->next = NULL;
-    } else {
-        // Otherwise, find the end of the list and add the new goblin there
-        Goblin* current = root->head;
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        current->next = new_goblin;
-        current->next->next = NULL; 
-        root->tail = current->next;
-        root->count++;
-    }
+void add_goblin(GoblinList* list, Goblin* new_goblin) {
+  // Failed to allocate goblin
+  if (new_goblin == NULL) return;
+
+  // Adds goblin to tail of linked list
+  // List is empty
+  if (list->head == NULL) {
+    list->head = new_goblin;
+    list->tail = new_goblin;
+  }
+  // Add to tail
+  else {
+    list->tail->next = new_goblin;
+    list->tail = new_goblin;
+  }
+  list->count++;
 }
 // Used to free memory allocated for enemy list
-void freeGoblinList(GoblinList* list){
-    Goblin* cur = list->head;
-    while(cur != NULL){
-        Goblin* tmp = cur;
-        cur = cur->next;
-        free(tmp);
+void freeGoblinList(GoblinList* list) {
+  Goblin* cur = list->head;
+  while (cur != NULL) {
+    Goblin* tmp = cur;
+    cur = cur->next;
+    free(tmp);
+  }
+  free(list);
+}
+
+// Checks for collisions of goblin and player
+bool updateCollisionPlayer(Player* player, GoblinList* g_list) {
+  // Check if goblin is currently attacking
+  Goblin* cur = g_list->head;
+  while (cur != NULL) {
+    // Check goblin is attacking and player is hittable
+    if (cur->state == 1 && player->state != EVASION) {
+      // Determine if player is in attack hitbox
+      if (cur->left) {
+        if (((player->x_pos >
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET - GOBLIN_ATTACK_BOX_WIDTH &&
+              player->x_pos < cur->x_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_PADDING) ||
+             (player->x_pos + player->width >
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET - GOBLIN_ATTACK_BOX_WIDTH &&
+              player->x_pos + player->width < cur->x_pos +
+                                                  GOBLIN_HITBOX_OFFSET +
+                                                  GOBLIN_ATTACK_BOX_PADDING)) &&
+            ((player->y_pos > cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_Y_OFFSET &&
+              player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_Y_OFFSET +
+                                  GOBLIN_ATTACK_BOX_HEIGHT) ||
+             (player->y_pos + player->height > cur->y_pos +
+                                                   GOBLIN_HITBOX_OFFSET +
+                                                   GOBLIN_ATTACK_BOX_Y_OFFSET &&
+              player->y_pos + player->height <
+                  cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                      GOBLIN_ATTACK_BOX_Y_OFFSET + GOBLIN_ATTACK_BOX_HEIGHT))) {
+          return true;
+        }
+      } else if (cur->right) {
+        if (((player->x_pos > cur->x_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_HITBOX_WIDTH -
+                                  GOBLIN_ATTACK_BOX_PADDING &&
+              player->x_pos < cur->x_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_HITBOX_WIDTH +
+                                  GOBLIN_ATTACK_BOX_WIDTH) ||
+             (player->x_pos + player->width >
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH -
+                      GOBLIN_ATTACK_BOX_PADDING &&
+              player->x_pos + player->width <
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH +
+                      GOBLIN_ATTACK_BOX_WIDTH)) &&
+            ((player->y_pos > cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_Y_OFFSET &&
+              player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_Y_OFFSET +
+                                  GOBLIN_ATTACK_BOX_HEIGHT) ||
+             (player->y_pos + player->height > cur->y_pos +
+                                                   GOBLIN_HITBOX_OFFSET +
+                                                   GOBLIN_ATTACK_BOX_Y_OFFSET &&
+              player->y_pos + player->height <
+                  cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                      GOBLIN_ATTACK_BOX_Y_OFFSET + GOBLIN_ATTACK_BOX_HEIGHT))) {
+          return true;
+        }
+      } else if (cur->down) {
+        if (((player->x_pos > cur->x_pos + GOBLIN_HITBOX_OFFSET &&
+              player->x_pos <
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH) ||
+             (player->x_pos + player->width >
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET &&
+              player->x_pos + player->width <
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH)) &&
+            ((player->y_pos > cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_HITBOX_HEIGHT -
+                                  GOBLIN_ATTACK_BOX_PADDING &&
+              player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_HITBOX_HEIGHT +
+                                  GOBLIN_ATTACK_BOX_HEIGHT) ||
+             (player->y_pos + player->height >
+                  cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT -
+                      GOBLIN_ATTACK_BOX_PADDING &&
+              player->y_pos + player->height <
+                  cur->y_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT +
+                      GOBLIN_ATTACK_BOX_HEIGHT))) {
+          return true;
+        }
+      } else {
+        if (((player->x_pos > cur->x_pos + GOBLIN_HITBOX_OFFSET &&
+              player->x_pos <
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH) ||
+             (player->x_pos + player->width >
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET &&
+              player->x_pos + player->width <
+                  cur->x_pos + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH)) &&
+            ((player->y_pos > cur->y_pos + GOBLIN_HITBOX_OFFSET -
+                                  GOBLIN_ATTACK_BOX_HEIGHT &&
+              player->y_pos < cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                                  GOBLIN_ATTACK_BOX_PADDING) ||
+             (player->y_pos + player->height > cur->y_pos +
+                                                   GOBLIN_HITBOX_OFFSET -
+                                                   GOBLIN_ATTACK_BOX_HEIGHT &&
+              player->y_pos + player->height <
+                  cur->y_pos + GOBLIN_HITBOX_OFFSET +
+                      GOBLIN_ATTACK_BOX_PADDING))) {
+          return true;
+        }
+      }
     }
-    free(list);
+    cur = cur->next;
+  }
+  // No collision
+  return false;
 }

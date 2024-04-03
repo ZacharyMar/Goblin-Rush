@@ -135,3 +135,24 @@ void updateCursor(Cursor* cursor, MouseData mouse){
     if (cursor->y_pos < 0) cursor->y_pos = 0;
     else if (cursor->y_pos + cursor->height > SCREEN_HEIGHT) cursor->y_pos = SCREEN_HEIGHT - cursor->height;
 }
+
+// Function called to handle when player hit by enemy
+void collisionHandler(Player* player){
+  // Decrease health
+  player->health--;
+
+  // Check if dead
+  if (player->health <= 0){
+    player->state = DEAD;
+    return;
+  }
+
+  // Reset counters and set player to evasion state
+  player->shoot_cooldown = 0;
+  player->state = EVASION;
+  player->canEvade = false;
+  // Increase movement speed
+  player->vel = player->vel << 2;
+  // Set timer for 4 seconds
+  set_timer(4000, TIMER_2_BASE, false);
+}

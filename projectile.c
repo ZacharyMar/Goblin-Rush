@@ -33,8 +33,8 @@ bool createProjectile(ProjectileList* list, const Player player,
   dy /= magnitude;
 
   // Load information
-  projectile->dx = dx;
-  projectile->dy = dy;
+  projectile->dx = dx*4;
+  projectile->dy = dy*4;
   projectile->x_pos = player.x_pos + (player.width >> 1);
   projectile->y_pos = player.y_pos + (player.height >> 1);
   projectile->next = NULL;

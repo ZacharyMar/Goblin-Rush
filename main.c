@@ -102,6 +102,10 @@ int main() {
 
     // Collision detection
     enemyProjectileCollisionUpdate(projectile_list, goblin_list);
+    // Enemy hit player
+    if (updateCollisionPlayer(&player, goblin_list)){
+      collisionHandler(&player);
+    }
 
     // Refresh screen
     refresh_screen(player, cursor, projectile_list);
