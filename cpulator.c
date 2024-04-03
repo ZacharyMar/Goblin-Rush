@@ -1406,9 +1406,7 @@ void refresh_screen(const Player player, const Cursor Cursor,
   draw_projectiles(list);
   draw_goblins(&player, goblin_list);
   draw_cursor(Cursor);
-  draw_goblins(&player, goblin_list);
-
-  // Call buffer swap
+    // Call buffer swap
   wait_for_vsync();
 }
 
