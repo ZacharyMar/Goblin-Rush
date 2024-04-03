@@ -13,4 +13,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed);
 // Updates the player's cursor
 void updateCursor(Cursor* cursor, MouseData mouse);
 
+// Function called to handle when player hit by enemy
+void collisionHandler(Player* player);
+
 #endif

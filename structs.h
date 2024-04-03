@@ -51,8 +51,8 @@ typedef struct Player {
 // Struct to store cursor information
 typedef struct Cursor {
   // Position of cursor
-  int x_pos;
-  int y_pos;
+  unsigned int x_pos;
+  unsigned int y_pos;
   // Dimensions of cursor
   unsigned short int width;
   unsigned short int height;

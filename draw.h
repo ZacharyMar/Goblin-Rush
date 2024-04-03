@@ -5,7 +5,7 @@
 #include "projectile.h"
 
 // sets up back buffer for double buffering
-void init_double_buffer(short int* buffer1, short int* buffer2);
+void init_double_buffer(short int buffer1[240][512], short int buffer2[240][512]);
 
 // plots a single pixel onto the back frame buffer
 void plot_pixel(int x, int y, short int colour);
@@ -27,5 +27,8 @@ void draw_projectiles(const ProjectileList* list);
 
 // Updates the screen
 void refresh_screen(const Player player, const Cursor Cursor, const ProjectileList* list);
-
+// draws an enemy sprite starting from its top left corner (x_offset, y_offset)
+void draw_enemy_sprite_frame(unsigned short int** sprite_ptr, unsigned int x_offset, unsigned int y_offset, unsigned int frame_idx, unsigned int num_frames, bool reverse);
+// draw all enemies and sprites
+void draw_goblins(const Player player, GoblinList* root);
 #endif
