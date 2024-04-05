@@ -19443,7 +19443,7 @@ unsigned short int empty_potion[16][16] = {
 #define HEXF 0x71
 
 // goblins
-#define GOBLIN_MAX_SPEED 6
+#define GOBLIN_SPEED_RANGE 6
 #define GOBLIN_ATTACK_RANGE 24
 // animation
 #define BOUNDARY 0
@@ -20765,8 +20765,8 @@ void update_goblins(const Player* player, GoblinList* root){
     Goblin* gob = root->head;
     while(gob != NULL){
         // update goblin parameters
-        int dx = player->x_pos + 8 - (gob->x_pos + 24); // true center of sprite
-        int dy = player->y_pos + 8 - (gob->y_pos + 24); 
+        float dx = player->x_pos + 8 - (gob->x_pos + 24); // true center of sprite
+        float dy = player->y_pos + 8 - (gob->y_pos + 24); 
 
         // distance moved in each direction
         int move_x = 0, move_y = 0;
@@ -20867,7 +20867,7 @@ void new_goblin(GoblinList* root){
         bool left = false, right = false, up = false, down = false;
         // set direction booleans
         rand_direction(&right, &left, &up, &down);
-        Goblin* g = create_goblin(rand() % (SCREEN_WIDTH - 48 - BOUNDARY) + BOUNDARY, rand() % (SCREEN_HEIGHT- 48 - BOUNDARY) + BOUNDARY, 3, (rand() % GOBLIN_MAX_SPEED) + 1, MOVING, 0, 6, right, left, up, down, 0); // state: 0 for walk 1 for attack
+        Goblin* g = create_goblin(rand() % (SCREEN_WIDTH - 48 - BOUNDARY) + BOUNDARY, rand() % (SCREEN_HEIGHT- 48 - BOUNDARY) + BOUNDARY, 3, (rand() % GOBLIN_SPEED_RANGE) + 5, MOVING, 0, 6, right, left, up, down, 0); // state: 0 for walk 1 for attack
         // add new goblin to linked list
         add_goblin(root, g);   
 }
