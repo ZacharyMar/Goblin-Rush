@@ -8,7 +8,7 @@
 */
 
 // Updates the player's position, state, and cooldowns
-void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed);
+void updatePlayer(Player* player, MouseData mouse, KeyboardData keyboard);
 
 // Updates the player's cursor
 void updateCursor(Cursor* cursor, MouseData mouse);

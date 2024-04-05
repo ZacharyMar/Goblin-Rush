@@ -25,6 +25,8 @@ typedef struct Player {
   unsigned short int height;
   // Score of the player
   unsigned int score;
+  // cooldown for score increment
+  unsigned int score_timer;
   // Cooldown for shooting
   unsigned int shoot_cooldown;
   // Health of player
@@ -51,15 +53,15 @@ typedef struct Player {
 // Struct to store cursor information
 typedef struct Cursor {
   // Position of cursor
-  unsigned int x_pos;
-  unsigned int y_pos;
+  int x_pos;
+  int y_pos;
   // Dimensions of cursor
   unsigned short int width;
   unsigned short int height;
   // Speed the cursor moves
   unsigned char vel;
 } Cursor;
-
+ 
 /************************** ENEMY RELATED ******************************/
 
 typedef struct Goblin{
@@ -147,7 +149,16 @@ typedef enum KEYS{
   S,
   D,
   SPACE,
-  OTHER
+  OTHER,
+  ACKNOWLEDGEMENT,
+  INVALID
 }KEYS;
+
+typedef struct KeyboardData{
+  // Stores the key pressed
+  KEYS key_pressed;
+  // true if breakcode made
+  bool breakcode;
+}KeyboardData;
 
 #endif

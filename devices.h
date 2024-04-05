@@ -15,12 +15,15 @@ void init_mouse();
 // Function used to get mouse data
 MouseData get_mouse_data();
 
+// Clears FIFO of PS2 device
+void clear_FIFO(volatile int* PS2_ptr);
+
 /******** KEYBOARD *******************/
 // Function used to initalize the keyboard device
 void init_keyboard();
 
 // Function to get keyboard data
-KEYS get_keyboard_data();
+KeyboardData get_keyboard_data();
 
 /******** TIMER ***************/
 // Function used to stop both timers
