@@ -19191,7 +19191,7 @@ unsigned short int cursor_sprite[13][13] = {
 
 // Player related
 #define SHOOTING_COOLDOWN 10
-#define SCORE_COOLDOWN 60
+#define SCORE_COOLDOWN 30
 
 // Projectile related
 #define PROJECTILE_WIDTH 5
@@ -19372,7 +19372,23 @@ typedef struct MouseData {
 } MouseData;
 
 // Enumeration of keys pressed
-typedef enum KEYS { W, A, S, D, SPACE, OTHER } KEYS;
+typedef enum KEYS{
+  W,
+  A,
+  S,
+  D,
+  SPACE,
+  OTHER,
+  ACKNOWLEDGEMENT,
+  INVALID
+}KEYS;
+
+typedef struct KeyboardData{
+  // Stores the key pressed
+  KEYS key_pressed;
+  // true if breakcode made
+  bool breakcode;
+}KeyboardData;
 
 /*********************
  * Prototypes
@@ -19389,7 +19405,7 @@ void clear_FIFO(volatile int* PS2_ptr);
 // Function used to initalize the keyboard device
 void init_keyboard();
 // Function to get keyboard data
-KEYS get_keyboard_data();
+KeyboardData get_keyboard_data();
 /******** TIMER ***************/
 // Function used to stop both timers
 void stop_timer();
@@ -19437,7 +19453,7 @@ void draw_projectiles(const ProjectileList* list);
 void refresh_screen(const Player player, const Cursor Cursor,
                     const ProjectileList* list, GoblinList* goblin_list);
 // Updates the player's position, state, and cooldowns
-void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed);
+void updatePlayer(Player* player, MouseData mouse, KeyboardData keyboard);
 // Updates the player's cursor
 void updateCursor(Cursor* cursor, MouseData mouse);
 // Function called to handle when player hit by enemy
@@ -19546,10 +19562,10 @@ int main() {
     MouseData mouse_data = get_mouse_data();
     
     // Get key pressed
-    KEYS key_pressed = get_keyboard_data();
+    KeyboardData keyboard_data = get_keyboard_data();
 
     // Update player and cursor based on inputs
-    updatePlayer(&player, mouse_data, key_pressed);
+    updatePlayer(&player, mouse_data, keyboard_data);
     updateCursor(&cursor, mouse_data);
 
     // Update enemies
@@ -19574,9 +19590,8 @@ int main() {
       collisionHandler(&player);
     }
 
-    // Clear FIFOs
+    // Clear FIFO
     clear_FIFO(PS2_MOUSE);
-    clear_FIFO(PS2_KEYBOARD);
 
     // Refresh screen
     refresh_screen(player, cursor, projectile_list, goblin_list);
@@ -19626,14 +19641,30 @@ void init_keyboard() {
   volatile int* PS2_KEYBOARD = (int*)PS2_DUAL_BASE;
   clear_FIFO(PS2_KEYBOARD);
 
-  // Write reset
-  *(PS2_KEYBOARD) = 0xFF;
+  do{
+    // Write reset
+    *(PS2_KEYBOARD) = 0xFF;
+    delay(10);
 
-  delay(500);
-  clear_FIFO(PS2_KEYBOARD);  
+    // Check acknowledgement
+    KeyboardData ack = get_keyboard_data();
+    // No error - allow data reporting
+    if (ack.key_pressed == ACKNOWLEDGEMENT){
+      *(PS2_KEYBOARD) = 0xF4;
+
+      // Check acknowledgement from keyboard 0xFA
+      int PS2_data;
+      do{
+        PS2_data = *(PS2_KEYBOARD);
+      }while((PS2_data & 0x8000) == 0 || (char)(PS2_data & 0xFF) != (char)0xFA);
+      delay(500);
+      clear_FIFO(PS2_KEYBOARD);
+      break;
+    }
+    // If there was an error, try to send reset again
+  }while(1);
   return;
 }
-
 // Gets mouse data from PS2
 MouseData get_mouse_data() {
   delay(10);
@@ -19676,18 +19707,18 @@ MouseData get_mouse_data() {
     }
 
     // Reset performed - send acknowledgement codes
-    // if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC) && byte2 == 0x0 && count == 3) {
-    //   // use LMB bit to indicate reset sucessful
-    //   mouse_data.LMB = byte1 == (char)0xAA ? 1 : 0;
-    //   return mouse_data;
-    // }
-
-    // CPUlator sim code
-    if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC)) {
+    if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC) && byte2 == 0x0 && count == 3) {
       // use LMB bit to indicate reset sucessful
       mouse_data.LMB = byte1 == (char)0xAA ? 1 : 0;
       return mouse_data;
     }
+
+    // CPUlator sim code
+    // if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC)) {
+    //   // use LMB bit to indicate reset sucessful
+    //   mouse_data.LMB = byte1 == (char)0xAA ? 1 : 0;
+    //   return mouse_data;
+    // }
 
     // All bytes gathered process data
     if (count == 3) {
@@ -19708,8 +19739,10 @@ MouseData get_mouse_data() {
     }
   }
 }
+
 // Function to get keyboard data
-KEYS get_keyboard_data() {
+KeyboardData get_keyboard_data() {
+  KeyboardData kb_data = {INVALID, false};
   // Used to keep track of bytes
   unsigned char count = 0;
 
@@ -19731,48 +19764,124 @@ KEYS get_keyboard_data() {
     RVALID = PS2_data & 0x8000;
 
     // No valid data if first byte is not valid
-    if (RVALID == 0 && count == 0) return OTHER;
+    if (!RVALID && count == 0) return kb_data;
 
     // Load data into correct bytes when valid data
-    if (RVALID != 0 && count == 0) {
+    if (RVALID && count == 0) {
       byte0 = PS2_data & 0xFF;
-    } else if (RVALID != 0 && count == 1) {
-      byte1 = PS2_data & 0xFF;
-    } else if (RVALID != 0 && count == 2) {
-      byte2 = PS2_data & 0xFF;
-    }
-
-    // All bytes gathered
-    if (count == 2) {
-      // decode key interacted with
-      switch (byte0) {
-        // W key
-        case (0x1D):
-          return W;
-        // A key
-        case (0x1C):
-          return A;
-        // S key
-        case (0x1B):
-          return S;
-        // D key
-        case (0x23):
-          return D;
-        // Space
-        case (0x29):
-          return SPACE;
-        // Other key
-        default:
-          return OTHER;
-      }
-    } else {
       count++;
-    }
-    // Device was just inserted - allow data to be sent
-    if ((byte1 == (char)0xAA) && (byte2 == (char)0x00)) {
-      *(PS2_KEYBOARD) = 0xF4;
+      // If not a breakcode or acknowledgement
+      if (byte0 != (char)0xF0 && byte0 != (char)0xFA && byte0 != (char)0xE0) break;
+    } else if (RVALID && count == 1) {
+      byte1 = PS2_data & 0xFF;
+      count++;
+      // If not a breakcode
+      if (byte1 != (char)0xF0) break;
+    } else if (RVALID && count == 2) {
+      byte2 = PS2_data & 0xFF;
+      // At most three bytes can be read
+      count++;
+      break;
     }
   }
+  
+  // Reset performed - send acknowledgement codes
+  if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC)) {
+      // use LMB bit to indicate reset sucessful
+      kb_data.key_pressed = byte1 == (char)0xAA ? ACKNOWLEDGEMENT : INVALID;
+      return kb_data;
+  }
+
+  // Only make code sent
+  if (count == 1){
+    // check invalid data
+    if (byte0 == (char)0xF0 || byte0 == (char)0xE0){
+        kb_data.key_pressed = INVALID;
+        clear_FIFO(PS2_KEYBOARD);
+        return kb_data;
+    }
+
+    // decode key interacted with
+    switch (byte0) {
+    // W key
+    case (0x1D):
+        kb_data.key_pressed = W;
+        break;
+    // A key
+    case (0x1C):
+        kb_data.key_pressed = A;
+        break;
+    // S key
+    case (0x1B):
+        kb_data.key_pressed = S;
+        break;
+    // D key
+    case (0x23):
+        kb_data.key_pressed = D;
+        break;
+    // Space
+    case (0x29):
+        kb_data.key_pressed = SPACE;
+        break;
+    // Other key
+    default:
+        kb_data.key_pressed = OTHER;
+        break;
+    }
+  }
+  // 2 bytes sent and make code sent
+  else if (count == 2){
+
+    // Check invalid
+    if (byte0 != (char)0xF0 && byte0 != (char)0xE0){
+        kb_data.key_pressed = INVALID;
+        clear_FIFO(PS2_KEYBOARD);
+        return kb_data;
+    }
+
+    // Check if breakcode was made
+    if (byte0 == (char)0xF0) kb_data.breakcode = true;
+    // decode key interacted with
+    switch (byte1) {
+    // W key
+    case (0x1D):
+        kb_data.key_pressed = W;
+        break;
+    // A key
+    case (0x1C):
+        kb_data.key_pressed = A;
+        break;
+    // S key
+    case (0x1B):
+        kb_data.key_pressed = S;
+        break;
+    // D key
+    case (0x23):
+        kb_data.key_pressed = D;
+        break;
+    // Space
+    case (0x29):
+        kb_data.key_pressed = SPACE;
+        break;
+    // Other key
+    default:
+        kb_data.key_pressed = OTHER;
+        break;
+    }
+  }
+  // 3 bytes sent - don't care
+  else{
+    // Check invalid code
+    if (byte0 != (char)0xE0){
+        kb_data.key_pressed = INVALID;
+        clear_FIFO(PS2_KEYBOARD);
+        return kb_data;
+    }
+
+    kb_data.key_pressed = OTHER;
+    kb_data.breakcode = true;
+  }
+  return kb_data;
 }
 
 // Clears FIFO for specified PS2 device
@@ -20030,6 +20139,7 @@ bool createProjectile(ProjectileList* list, const Player player,
 
   // Normalize vector
   float magnitude = sqrt((dx * dx) + (dy * dy));
+  if (magnitude == 0) return false;
   dx /= magnitude;
   dy /= magnitude;
 
@@ -20233,60 +20343,44 @@ void freeProjectileList(ProjectileList* list) {
 }
 
 // Updates the player's position, state, and cooldowns
-void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
+void updatePlayer(Player* player, MouseData mouse, KeyboardData keyboard) {
   /**** Keyboard input ********/
   // WASD control movement of player
   // SPACE controls evasion state of player
 
-  // Update position and state based on key press
-  switch (key_pressed) {
+  // Update state based on key press
+  switch (keyboard.key_pressed) {
     // Move player up
     case W:
-      player->y_pos -= player->vel;
-      player->up = true;
-      player->down = false;
-      player->left = false;
-      player->right = false;
+      player->up = !keyboard.breakcode;
       player->state = player->state == EVASION ? EVASION : MOVING;
       break;
     // Move left
     case A:
-      player->x_pos -= player->vel;
-      player->left = true;
-      player->right = false;
-      player->up = false;
-      player->down = false;
+      player->left = !keyboard.breakcode;
       player->state = player->state == EVASION ? EVASION : MOVING;
       break;
     // Move right
     case D:
-      player->x_pos += player->vel;
-      player->right = true;
-      player->left = false;
-      player->down = false;
-      player->up = false;
+      player->right = !keyboard.breakcode;
       player->state = player->state == EVASION ? EVASION : MOVING;
       break;
     // Move down
     case S:
-      player->y_pos += player->vel;
-      player->down = true;
-      player->up = false;
-      player->left = false;
-      player->right = false;
+      player->down = !keyboard.breakcode;
       player->state = player->state == EVASION ? EVASION : MOVING;
       break;
     // Evasion
     case SPACE:
       // Enter evasion if cooldown is set to zero and in a valid state
       // Player enters evasion state for 2 seconds
-      if (player->canEvade && player->health > 0) {
+      if (!keyboard.breakcode && player->canEvade && player->health > 0) {
         player->state = EVASION;
         player->canEvade = false;
         // Increase movement speed
         player->vel = player->vel << 2;
         // Set timer for 2 seconds
-        set_timer(1000, TIMER_2_BASE, false);
+        set_timer(2000, TIMER_2_BASE, false);
       }
       break;
 
@@ -20295,6 +20389,12 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
       player->state = player->state == EVASION ? EVASION : IDLE;
       break;
   }
+
+  // Update position based on state
+  if (player->up) player->y_pos -= player->vel;
+  if (player->down) player->y_pos += player->vel;
+  if (player->right) player->x_pos += player->vel;
+  if (player->left) player->x_pos -= player->vel;
 
   // Check out of bounds for player
   // Left boundary
@@ -20323,7 +20423,7 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
     // Set speed back to normal
     player->vel = player->vel >> 2;
     // Set timer for cooldown for 30s
-    set_timer(5000, TIMER_2_BASE, false);
+    set_timer(30000, TIMER_2_BASE, false);
   }
   // Cooldown is finished for evasion
   else if (timerDone) {

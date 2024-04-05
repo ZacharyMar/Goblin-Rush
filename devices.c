@@ -44,6 +44,7 @@ void init_keyboard() {
   do{
     // Write reset
     *(PS2_KEYBOARD) = 0xFF;
+    delay(10);
 
     // Check acknowledgement
     KeyboardData ack = get_keyboard_data();
@@ -176,67 +177,119 @@ KeyboardData get_keyboard_data() {
     // Load data into correct bytes when valid data
     if (RVALID && count == 0) {
       byte0 = PS2_data & 0xFF;
+      count++;
+      // If not a breakcode or acknowledgement
+      if (byte0 != (char)0xF0 && byte0 != (char)0xFA && byte0 != (char)0xE0) break;
     } else if (RVALID && count == 1) {
       byte1 = PS2_data & 0xFF;
+      count++;
+      // If not a breakcode
+      if (byte1 != (char)0xF0) break;
     } else if (RVALID && count == 2) {
       byte2 = PS2_data & 0xFF;
+      // At most three bytes can be read
+      count++;
+      break;
     }
-
-    // Reset performed - send acknowledgement codes
-    // Ack codes are CPUlator specific -- need to check on board
-    if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC) && byte2 == 0x0 && count == 2) {
+  }
+  
+  // Reset performed - send acknowledgement codes
+  if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC)) {
       // use LMB bit to indicate reset sucessful
       kb_data.key_pressed = byte1 == (char)0xAA ? ACKNOWLEDGEMENT : INVALID;
       return kb_data;
+  }
+
+  // Only make code sent
+  if (count == 1){
+    // check invalid data
+    if (byte0 == (char)0xF0 || byte0 == (char)0xE0){
+        kb_data.key_pressed = INVALID;
+        clear_FIFO(PS2_KEYBOARD);
+        return kb_data;
     }
 
-    // All bytes gathered
-    if (count == 2) {
-      // Check bytes aligned correctly
-      // byte1 can only be 0x00 or 0xF0
-      // byte2 can only be 0x00 or 0xE0
-      if ((byte1 != (char)0x00 && byte1 != (char)0xF0) || (byte2 != (char)0x00 && byte2 != (char)0xE0)){
-        clear_FIFO(PS2_KEYBOARD);
-        kb_data.key_pressed = INVALID;
-        return kb_data;
-      }
-
-      // decode key interacted with
-      switch (byte0) {
-        // W key
-        case (0x1D):
-          kb_data.key_pressed = W;
-          break;
-        // A key
-        case (0x1C):
-          kb_data.key_pressed = A;
-          break;
-        // S key
-        case (0x1B):
-          kb_data.key_pressed = S;
-          break;
-        // D key
-        case (0x23):
-          kb_data.key_pressed = D;
-          break;
-        // Space
-        case (0x29):
-          kb_data.key_pressed = SPACE;
-          break;
-        // Other key
-        default:
-          kb_data.key_pressed = OTHER;
-          break;
-
-        // Check if breakcode was made
-        if (byte1 == (char)0xF0) kb_data.breakcode = true;
-
-        return kb_data;
-      }
-    } else {
-      count++;
+    // decode key interacted with
+    switch (byte0) {
+    // W key
+    case (0x1D):
+        kb_data.key_pressed = W;
+        break;
+    // A key
+    case (0x1C):
+        kb_data.key_pressed = A;
+        break;
+    // S key
+    case (0x1B):
+        kb_data.key_pressed = S;
+        break;
+    // D key
+    case (0x23):
+        kb_data.key_pressed = D;
+        break;
+    // Space
+    case (0x29):
+        kb_data.key_pressed = SPACE;
+        break;
+    // Other key
+    default:
+        kb_data.key_pressed = OTHER;
+        break;
     }
   }
+  // 2 bytes sent and make code sent
+  else if (count == 2){
+
+    // Check invalid
+    if (byte0 != (char)0xF0 && byte0 != (char)0xE0){
+        kb_data.key_pressed = INVALID;
+        clear_FIFO(PS2_KEYBOARD);
+        return kb_data;
+    }
+
+    // Check if breakcode was made
+    if (byte0 == (char)0xF0) kb_data.breakcode = true;
+    // decode key interacted with
+    switch (byte1) {
+    // W key
+    case (0x1D):
+        kb_data.key_pressed = W;
+        break;
+    // A key
+    case (0x1C):
+        kb_data.key_pressed = A;
+        break;
+    // S key
+    case (0x1B):
+        kb_data.key_pressed = S;
+        break;
+    // D key
+    case (0x23):
+        kb_data.key_pressed = D;
+        break;
+    // Space
+    case (0x29):
+        kb_data.key_pressed = SPACE;
+        break;
+    // Other key
+    default:
+        kb_data.key_pressed = OTHER;
+        break;
+    }
+  }
+  // 3 bytes sent - don't care
+  else{
+    // Check invalid code
+    if (byte0 != (char)0xE0){
+        kb_data.key_pressed = INVALID;
+        clear_FIFO(PS2_KEYBOARD);
+        return kb_data;
+    }
+
+    kb_data.key_pressed = OTHER;
+    kb_data.breakcode = true;
+  }
+  return kb_data;
 }
 
 /***************** TIMER *******************/
