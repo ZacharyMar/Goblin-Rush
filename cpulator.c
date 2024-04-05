@@ -20795,7 +20795,7 @@ void update_goblins(const Player* player, GoblinList* root){
         int new_x = gob->x_pos + move_x;
         int new_y = gob->y_pos + move_y;
         // update boolean parameters based on whether or not next move is in bounds
-        if(!in_bounds(new_x, new_y, 48, 48)){
+        if(!in_bounds(new_x, new_y, GOBLIN_HITBOX_WIDTH, GOBLIN_HITBOX_HEIGHT)){
             if(new_x <= BOUNDARY){
                 gob->right = true;
                 gob->left = false;
