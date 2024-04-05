@@ -10,11 +10,28 @@
 void init_mouse() {
   // Base addr
   volatile int* PS2_MOUSE = (int*)PS2_BASE;
+  clear_FIFO(PS2_MOUSE);
+  
+  do {
+    // Write reset
+    *(PS2_MOUSE) = 0xFF;
 
-  // Write reset
-  *(PS2_MOUSE) = 0xFF;
-  // Write enable
-  *(PS2_MOUSE) = 0xF4;
+    // Check acknowledgement
+    MouseData ack = get_mouse_data();
+    // No error - enable reporting
+    if (ack.LMB){
+      *(PS2_MOUSE) = 0xF4;
+      // Get acknowledgement byte 0xFA
+      int PS2_data;
+      do{
+        PS2_data = *(PS2_MOUSE);
+      }while((PS2_data & 0x8000) == 0 || (char)(PS2_data & 0xFF) != (char)0xFA);
+      delay(500);
+      clear_FIFO(PS2_MOUSE);    
+      break;
+    }
+    // If there is an error - try reset again
+  } while (1);
   return;
 }
 
@@ -25,15 +42,25 @@ void init_keyboard() {
 
   // Write reset
   *(PS2_KEYBOARD) = 0xFF;
-  // Write enable
-  *(PS2_KEYBOARD) = 0xF4;
+
+  delay(500);
+  clear_FIFO(PS2_KEYBOARD);
   return;
+}
+
+// Clears FIFO for specified PS2 device
+void clear_FIFO(volatile int* PS2_ptr){
+  delay(10);
+  int PS2_data;
+  do{
+    // Read data register
+    PS2_data = *(PS2_ptr);
+  }while((PS2_data & 0xFFFF0000) != 0);
 }
 
 // Gets mouse data from PS2
 MouseData get_mouse_data() {
-  // Add busy wait loop before getting mouse data
-
+  delay(10);
   // Create mousedata struct
   MouseData mouse_data = {0, 0, 0};
 
@@ -44,9 +71,9 @@ MouseData get_mouse_data() {
   unsigned char count = 0;
 
   // temps to store bytes read from mouse
-  unsigned char byte0 = 0;
-  unsigned char byte1 = 0;
-  unsigned char byte2 = 0;
+  signed char byte0 = 0;
+  signed char byte1 = 0;
+  signed char byte2 = 0;
 
   // Used to get data register values from PS2
   int PS2_data, RVALID;
@@ -58,56 +85,47 @@ MouseData get_mouse_data() {
     RVALID = PS2_data & 0x8000;
 
     // No valid data on first byte -> ignore
-    if (!RVALID && count == 0) return mouse_data;
+    if (RVALID == 0 && count == 0) return mouse_data;
 
     // Load data into correct bytes when valid data
-    if (RVALID && count == 0) {
-      byte0 = PS2_data & 0xFF;
+    if (RVALID != 0 && count == 0) {
+      byte0 = (signed char)(PS2_data & 0xFF);
+      //printf("B0: %d\n", byte0);
       count++;
-    } else if (RVALID && count == 1) {
-      byte1 = PS2_data & 0xFF;
+    } else if (RVALID != 0 && count == 1) {
+      byte1 = (signed char)(PS2_data & 0xFF);
+      //printf("B1: %d\n", byte1);
       count++;
-    } else if (RVALID && count == 2) {
-      byte2 = PS2_data & 0xFF;
+    } else if (RVALID != 0 && count == 2) {
+      byte2 = (signed char)(PS2_data & 0xFF);
+      //printf("B2: %d\n", byte2);
       count++;
+    }
+
+    // Reset performed - send acknowledgement codes
+    // Ack codes are CPUlator specific -- need to check on board
+    if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC) && byte2 == 0x0 && count == 3) {
+      // use LMB bit to indicate reset sucessful
+      mouse_data.LMB = byte1 == (char)0xAA ? 1 : 0;
+      return mouse_data;
     }
 
     // All bytes gathered process data
     if (count == 3) {
-      // Get sign bits for movement
-      unsigned char x_sign = byte0 & 0x10;
-      unsigned char y_sign = byte0 & 0x20;
-      // Get LMB press
+      // Check bytes are not aligned
+      if ((byte0 & 0x8) == 0 || (byte0 & 0xC6) != 0){
+        clear_FIFO(PS2_MOUSE);
+        return mouse_data;
+      }
+
+      // Assign values to mouse data
       mouse_data.LMB = byte0 & 0x1;
+      mouse_data.dx = byte1;
+      mouse_data.dy = byte2*-1;
+      //printf("DX: %d DY: %d\n", mouse_data.dx, mouse_data.dy);
 
-      // Change in x
-      // Positive -> move right
-      if (x_sign == 0) {
-        mouse_data.dx = byte1;
-      }
-      // Negative -> move left
-      else {
-        // Get two's comp
-        int sign_extended = 0xFFFFFF00 + byte1;
-        mouse_data.dx = sign_extended;
-      }
-
-      // Change in y
-      // Positive -> move down
-      if (y_sign == 0) {
-        mouse_data.dy = byte2;
-      } else {
-        // Two's comp
-        int sign_extended = 0xFFFFFF00 + byte2;
-        mouse_data.dy = sign_extended;
-      }
       // All data processed return
       return mouse_data;
-    }
-
-    // Device was just inserted - allow data to be sent
-    if ((byte1 == (char)0xAA) && (byte2 == (char)0x00)) {
-      *(PS2_MOUSE) = 0xF4;
     }
   }
 }
@@ -118,9 +136,9 @@ KEYS get_keyboard_data() {
   unsigned char count = 0;
 
   // Temps to store bytes sent from keyboard
-  unsigned char byte0 = 0;
-  unsigned char byte1 = 0;
-  unsigned char byte2 = 0;
+  char byte0 = 0;
+  char byte1 = 0;
+  char byte2 = 0;
 
   // Used to store register values from device
   int PS2_data, RVALID;

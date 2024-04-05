@@ -8,6 +8,7 @@
 
 // Player related
 #define SHOOTING_COOLDOWN 25
+#define SCORE_COOLDOWN 60
 
 // Projectile related
 #define PROJECTILE_WIDTH 2

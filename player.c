@@ -116,10 +116,13 @@ void updatePlayer(Player* player, MouseData mouse, KEYS key_pressed) {
     player->shoot_cooldown--;
   }
 
-  // Update player's score when base timer done counting down
-  timerDone = timer_done(TIMER_BASE);
-  if (timerDone && player->health > 0){
+  // Update player's score when score timer done counting down
+  if (player->score_timer == 0){
     player->score++;
+    player->score_timer = SCORE_COOLDOWN + 1;
+  }
+  if (player->score_timer > 0){
+    player->score_timer--;
   }
 }
 

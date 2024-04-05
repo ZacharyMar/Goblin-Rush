@@ -28,16 +28,13 @@ int main() {
   init_hex();
   init_double_buffer(Buffer1, Buffer2);
 
-  // Clear garbage from PS2 FIFOs
-  get_mouse_data();
-  get_keyboard_data();
-
   // Create instances of player and cursor
   Player player = {.x_pos = 100,
                    .y_pos = 60,
                    .height = 10,
                    .width = 10,
                    .score = 0,
+                   .score_timer = SCORE_COOLDOWN + 1,
                    .shoot_cooldown = 0,
                    .health = 100,
                    .vel = 5,
@@ -74,9 +71,6 @@ int main() {
   goblin_list->head = 0;
   goblin_list->tail = 0;
   goblin_list->count = 0;
-
-  // Setup score timer - player gains one score every 1 second
-  set_timer(1000, TIMER_BASE, true);
 
   while (1) {
     // Get mouse data
