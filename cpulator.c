@@ -19411,8 +19411,8 @@ unsigned short int empty_potion[16][16] = {
 
 // Player related
 #define PLAYER_MAX_HEALTH 5
-#define SHOOTING_COOLDOWN 10
-#define SCORE_COOLDOWN 30
+#define SHOOTING_COOLDOWN 8
+#define SCORE_COOLDOWN 5
 
 // Projectile related
 #define PROJECTILE_WIDTH 5
@@ -19445,6 +19445,7 @@ unsigned short int empty_potion[16][16] = {
 // goblins
 #define GOBLIN_SPEED_RANGE 6
 #define GOBLIN_ATTACK_RANGE 24
+
 // animation
 #define BOUNDARY 0
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -19462,6 +19463,11 @@ unsigned short int empty_potion[16][16] = {
 #define GOBLIN_ATTACK_BOX_HEIGHT 12
 #define GOBLIN_ATTACK_BOX_Y_OFFSET 8
 #define GOBLIN_ATTACK_BOX_PADDING 5
+#define GOBLIN_HEALTH_RANGE 2
+
+// Difficulty scaling
+#define ENEMY_SPAWN_INCREASE 50
+#define STARTING_SPAWN_PERIOD 40
 
 /*************** PLAYER RELATED ***********************/
 
@@ -19795,6 +19801,8 @@ int main() {
   volatile int* PS2_MOUSE = (int *)PS2_BASE;
   volatile int* PS2_KEYBOARD = (int *)PS2_DUAL_BASE;
 
+  int goblin_spawn_period = STARTING_SPAWN_PERIOD;
+
   while (1) {
     
     // Get mouse data
@@ -19810,7 +19818,7 @@ int main() {
     // Update enemies
     update_goblins(&player, goblin_list);
     // add goblin
-    if (goblin_list->count < 20 && goblin_spawn_counter % 50 == 0) {
+    if (goblin_list->count < 10 && goblin_spawn_counter % goblin_spawn_period == 0) {
       new_goblin(goblin_list);
     }
     goblin_spawn_counter++;
@@ -19841,6 +19849,9 @@ int main() {
     // Update score display
     set_hex(player.score);
     hurt_count--;
+
+    // Scale spawn rate with score
+    if (goblin_spawn_period > 5) goblin_spawn_period = STARTING_SPAWN_PERIOD - (player.score / ENEMY_SPAWN_INCREASE);
   }
 
   // Deallocate memory
@@ -20649,7 +20660,7 @@ void updatePlayer(Player* player, MouseData mouse, KeyboardData keyboard) {
         // Increase movement speed
         player->vel = player->vel << 2;
         // Set timer for 2 seconds
-        set_timer(2000, TIMER_2_BASE, false);
+        set_timer(1000, TIMER_2_BASE, false);
       }
       break;
 
@@ -20692,7 +20703,7 @@ void updatePlayer(Player* player, MouseData mouse, KeyboardData keyboard) {
     // Set speed back to normal
     player->vel = player->vel >> 2;
     // Set timer for cooldown for 30s
-    set_timer(30000, TIMER_2_BASE, false);
+    set_timer(5000, TIMER_2_BASE, false);
   }
   // Cooldown is finished for evasion
   else if (timerDone) {
@@ -20757,7 +20768,7 @@ void collisionHandler(Player* player) {
   // Increase movement speed
   player->vel = player->vel << 2;
   // Set timer for 2 seconds
-  set_timer(2000, TIMER_2_BASE, false);
+  set_timer(1000, TIMER_2_BASE, false);
 }
 // updates the goblin object based on player location
 void update_goblins(const Player* player, GoblinList* root){
@@ -20795,20 +20806,20 @@ void update_goblins(const Player* player, GoblinList* root){
         int new_x = gob->x_pos + move_x;
         int new_y = gob->y_pos + move_y;
         // update boolean parameters based on whether or not next move is in bounds
-        if(!in_bounds(new_x, new_y, GOBLIN_HITBOX_WIDTH, GOBLIN_HITBOX_HEIGHT)){
-            if(new_x <= BOUNDARY){
+        if(!in_bounds(new_x + GOBLIN_HITBOX_OFFSET, new_y + GOBLIN_HITBOX_OFFSET, GOBLIN_HITBOX_WIDTH, GOBLIN_HITBOX_HEIGHT)){
+            if(new_x + GOBLIN_HITBOX_OFFSET <= BOUNDARY){
                 gob->right = true;
                 gob->left = false;
             }
-            if(new_x + 48 + BOUNDARY >= SCREEN_WIDTH){
+            if(new_x + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_WIDTH + BOUNDARY >= SCREEN_WIDTH){
                 gob->right = false;
                 gob->left = true;
             }
-            if(new_y <= BOUNDARY){
+            if(new_y + GOBLIN_HITBOX_OFFSET <= BOUNDARY){
                 gob->up = true;
                 gob->down = false;
             }
-            if(new_y + 48 + BOUNDARY >= SCREEN_HEIGHT){
+            if(new_y + GOBLIN_HITBOX_OFFSET + GOBLIN_HITBOX_HEIGHT + BOUNDARY >= SCREEN_HEIGHT){
                 gob->up = false;
                 gob->down = true;
             }
@@ -20867,7 +20878,7 @@ void new_goblin(GoblinList* root){
         bool left = false, right = false, up = false, down = false;
         // set direction booleans
         rand_direction(&right, &left, &up, &down);
-        Goblin* g = create_goblin(rand() % (SCREEN_WIDTH - 48 - BOUNDARY) + BOUNDARY, rand() % (SCREEN_HEIGHT- 48 - BOUNDARY) + BOUNDARY, 3, (rand() % GOBLIN_SPEED_RANGE) + 5, MOVING, 0, 6, right, left, up, down, 0); // state: 0 for walk 1 for attack
+        Goblin* g = create_goblin(rand() % (SCREEN_WIDTH - 48 - BOUNDARY) + BOUNDARY, rand() % (SCREEN_HEIGHT- 48 - BOUNDARY) + BOUNDARY, (rand() & GOBLIN_HEALTH_RANGE) + 1, (rand() % GOBLIN_SPEED_RANGE) + 5, MOVING, 0, 6, right, left, up, down, 0); // state: 0 for walk 1 for attack
         // add new goblin to linked list
         add_goblin(root, g);   
 }
@@ -21106,13 +21117,15 @@ void freeGoblinList(GoblinList* list) {
 void draw_healthbar(const Player player){
   unsigned int x = POTIONSTARTX;
   unsigned int y = POTIONSTARTY;
+  short unsigned int ** potionptr = NULL;
   for(int i = 0; i < PLAYER_MAX_HEALTH; i++){
     if(i < player.health){
-      draw_potion(potion, x + (POTIONGAP + 16) * i, y);
+        potionptr = potion;
     }
     else{
-      draw_potion(empty_potion, x + (POTIONGAP + 16) * i, y);
+      potionptr = empty_potion;
     }
+    draw_potion(potionptr, x + (POTIONGAP + 16) * i, y);
   }
 }
 // draws a single potion
@@ -21127,3 +21140,4 @@ void draw_potion(unsigned short int** potion_ptr, unsigned int x, unsigned int y
     }
   }
 }
+
