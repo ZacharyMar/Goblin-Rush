@@ -39,12 +39,29 @@ void init_mouse() {
 void init_keyboard() {
   // Base addr
   volatile int* PS2_KEYBOARD = (int*)PS2_DUAL_BASE;
-
-  // Write reset
-  *(PS2_KEYBOARD) = 0xFF;
-
-  delay(500);
   clear_FIFO(PS2_KEYBOARD);
+
+  do{
+    // Write reset
+    *(PS2_KEYBOARD) = 0xFF;
+
+    // Check acknowledgement
+    KeyboardData ack = get_keyboard_data();
+    // No error - allow data reporting
+    if (ack.key_pressed == ACKNOWLEDGEMENT){
+      *(PS2_KEYBOARD) = 0xF4;
+
+      // Check acknowledgement from keyboard 0xFA
+      int PS2_data;
+      do{
+        PS2_data = *(PS2_KEYBOARD);
+      }while((PS2_data & 0x8000) == 0 || (char)(PS2_data & 0xFF) != (char)0xFA);
+      delay(500);
+      clear_FIFO(PS2_KEYBOARD);
+      break;
+    }
+    // If there was an error, try to send reset again
+  }while(1);
   return;
 }
 
@@ -131,7 +148,8 @@ MouseData get_mouse_data() {
 }
 
 // Function to get keyboard data
-KEYS get_keyboard_data() {
+KeyboardData get_keyboard_data() {
+  KeyboardData kb_data = {INVALID, false};
   // Used to keep track of bytes
   unsigned char count = 0;
 
@@ -153,7 +171,7 @@ KEYS get_keyboard_data() {
     RVALID = PS2_data & 0x8000;
 
     // No valid data if first byte is not valid
-    if (!RVALID && count == 0) return OTHER;
+    if (!RVALID && count == 0) return kb_data;
 
     // Load data into correct bytes when valid data
     if (RVALID && count == 0) {
@@ -164,35 +182,59 @@ KEYS get_keyboard_data() {
       byte2 = PS2_data & 0xFF;
     }
 
+    // Reset performed - send acknowledgement codes
+    // Ack codes are CPUlator specific -- need to check on board
+    if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC) && byte2 == 0x0 && count == 2) {
+      // use LMB bit to indicate reset sucessful
+      kb_data.key_pressed = byte1 == (char)0xAA ? ACKNOWLEDGEMENT : INVALID;
+      return kb_data;
+    }
+
     // All bytes gathered
     if (count == 2) {
+      // Check bytes aligned correctly
+      // byte1 can only be 0x00 or 0xF0
+      // byte2 can only be 0x00 or 0xE0
+      if ((byte1 != (char)0x00 && byte1 != (char)0xF0) || (byte2 != (char)0x00 && byte2 != (char)0xE0)){
+        clear_FIFO(PS2_KEYBOARD);
+        kb_data.key_pressed = INVALID;
+        return kb_data;
+      }
+
       // decode key interacted with
       switch (byte0) {
         // W key
         case (0x1D):
-          return W;
+          kb_data.key_pressed = W;
+          break;
         // A key
         case (0x1C):
-          return A;
+          kb_data.key_pressed = A;
+          break;
         // S key
         case (0x1B):
-          return S;
+          kb_data.key_pressed = S;
+          break;
         // D key
         case (0x23):
-          return D;
+          kb_data.key_pressed = D;
+          break;
         // Space
         case (0x29):
-          return SPACE;
+          kb_data.key_pressed = SPACE;
+          break;
         // Other key
         default:
-          return OTHER;
+          kb_data.key_pressed = OTHER;
+          break;
+
+        // Check if breakcode was made
+        if (byte1 == (char)0xF0) kb_data.breakcode = true;
+
+        return kb_data;
       }
     } else {
       count++;
-    }
-    // Device was just inserted - allow data to be sent
-    if ((byte1 == (char)0xAA) && (byte2 == (char)0x00)) {
-      *(PS2_KEYBOARD) = 0xF4;
     }
   }
 }

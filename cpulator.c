@@ -19201,6 +19201,7 @@ unsigned short int cursor_sprite[13][13] = {
 #define YELLOW 0xFFE0
 #define RED 0xF800
 #define GREEN 0x07E0
+#define PURPLE 0xF81F
 
 // Hex display
 #define HEX0 0x3F
@@ -19675,18 +19676,18 @@ MouseData get_mouse_data() {
     }
 
     // Reset performed - send acknowledgement codes
-    if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC) && byte2 == 0x0 && count == 3) {
-      // use LMB bit to indicate reset sucessful
-      mouse_data.LMB = byte1 == (char)0xAA ? 1 : 0;
-      return mouse_data;
-    }
-
-    // CPUlator sim code
-    // if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC)) {
+    // if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC) && byte2 == 0x0 && count == 3) {
     //   // use LMB bit to indicate reset sucessful
     //   mouse_data.LMB = byte1 == (char)0xAA ? 1 : 0;
     //   return mouse_data;
     // }
+
+    // CPUlator sim code
+    if (byte0 == (char)0xFA && (byte1 == (char)0xAA || byte1 == (char)0xFC)) {
+      // use LMB bit to indicate reset sucessful
+      mouse_data.LMB = byte1 == (char)0xAA ? 1 : 0;
+      return mouse_data;
+    }
 
     // All bytes gathered process data
     if (count == 3) {
@@ -19981,7 +19982,7 @@ void draw_projectiles(const ProjectileList* list) {
     // Draw each projectile as yellow square
     for (int y = (int)cur->y_pos; y < (int)(cur->y_pos + cur->height); y++) {
       for (int x = (int)cur->x_pos; x < (int)(cur->x_pos + cur->width); x++) {
-        plot_pixel(x, y, YELLOW);
+        plot_pixel(x, y, PURPLE);
       }
     }
 

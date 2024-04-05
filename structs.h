@@ -149,7 +149,16 @@ typedef enum KEYS{
   S,
   D,
   SPACE,
-  OTHER
+  OTHER,
+  ACKNOWLEDGEMENT,
+  INVALID
 }KEYS;
+
+typedef struct KeyboardData{
+  // Stores the key pressed
+  KEYS key_pressed;
+  // true if breakcode made
+  bool breakcode;
+}KeyboardData;
 
 #endif

@@ -23,7 +23,7 @@ void clear_FIFO(volatile int* PS2_ptr);
 void init_keyboard();
 
 // Function to get keyboard data
-KEYS get_keyboard_data();
+KeyboardData get_keyboard_data();
 
 /******** TIMER ***************/
 // Function used to stop both timers

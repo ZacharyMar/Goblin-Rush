@@ -33,6 +33,7 @@
 #define YELLOW 0xFFE0
 #define RED 0xF800
 #define GREEN 0x07E0
+#define PURPLE 0xF81F
 
 // Hex display
 #define HEX0 0x3F

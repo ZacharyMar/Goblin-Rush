@@ -76,10 +76,10 @@ int main() {
     // Get mouse data
     MouseData mouse_data = get_mouse_data();
     // Get key pressed
-    KEYS key_pressed = get_keyboard_data();
+    KeyboardData keyboard_data = get_keyboard_data();
 
     // Update player and cursor based on inputs
-    updatePlayer(&player, mouse_data, key_pressed);
+    updatePlayer(&player, mouse_data, keyboard_data);
     updateCursor(&cursor, mouse_data);
 
     // TODO:
